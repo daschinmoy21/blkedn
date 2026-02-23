@@ -47,7 +47,6 @@
         "--group-directories-first"
         "--no-time"
         "--no-permissions"
-        "--tree"
         "--long"
         "--no-user"
       ];

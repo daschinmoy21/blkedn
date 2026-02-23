@@ -1,209 +1,54 @@
 {...}: {
   programs.niri.settings = {
     window-rules = [
+      # Work around WezTerm's initial configure bug
       {
-        matches = [{is-focused = false;}];
-        opacity = 0.92;
+        matches = [{ app-id = "^org\\.wezfurlong\\.wezterm$"; }];
+        default-column-width = {};
       }
+
+      # Open the Firefox picture-in-picture player as floating by default
       {
-        matches = [{is-urgent = true;}];
-        opacity = 1.0;
+        matches = [{ app-id = "firefox$"; title = "^Picture-in-Picture$"; }];
+        open-floating = true;
       }
+
+      # Global window styling
       {
-        clip-to-geometry = true;
         geometry-corner-radius = {
-          top-left = 12.0;
-          top-right = 12.0;
-          bottom-left = 12.0;
-          bottom-right = 12.0;
+          top-left = 9.0;
+          top-right = 9.0;
+          bottom-left = 9.0;
+          bottom-right = 9.0;
         };
+        clip-to-geometry = true;
+        opacity = 0.93;
+        draw-border-with-background = false;
       }
+
+      # Opacity rules for specific applications
       {
-        matches = [
-          {
-            app-id = "firefox$";
-            title = "^Picture-in-Picture$";
-          }
-        ];
-        default-column-width = {proportion = 0.33333;};
-        default-window-height = {proportion = 0.5;};
-        open-floating = true;
-        open-focused = false;
+        matches = [{ app-id = "^(kitty|thunar|org\\.telegram\\.desktop|discord|vesktop|org\\.gnome\\.Nautilus|nemo)$"; }];
+        opacity = 0.9;
       }
+
+      # Launch vesktop and Telegram on DP-3 monitor (Commented out for safety as monitor names differ)
+      # {
+      #   matches = [{ app-id = "^(vesktop|org\\.telegram\\.desktop)$"; }];
+      #   open-on-output = "DP-3";
+      # }
+
+      # Zen Browser and Zed settings
       {
-        matches = [
-          {
-            app-id = "^feh$";
-          }
-        ];
-        open-floating = true;
-        open-focused = true;
-        default-column-width = {proportion = 0.33333;};
-        default-window-height = {proportion = 0.5;};
+        matches = [{ app-id = "^(zen-beta|dev\\.zed\\.Zed)$"; }];
+        opacity = 0.98;
+        default-column-width = { proportion = 0.75; };
       }
+
+      # Web apps and Steam opacity
       {
-        matches = [
-          {
-            app-id = "^xarchiver$";
-          }
-        ];
-        open-floating = true;
-      }
-      {
-        matches = [
-          {
-            app-id = "thunar$";
-            title = "^Rename ";
-          }
-        ];
-        open-floating = true;
-      }
-      {
-        matches = [
-          {
-            app-id = "^dot\.floating\.thunar$";
-          }
-        ];
-        open-floating = true;
-        default-column-width = {proportion = 0.33333;};
-        default-window-height = {proportion = 0.5;};
-      }
-      {
-        matches = [
-          {
-            app-id = "^thunar-bulk-rename$";
-          }
-        ];
-        open-floating = true;
-      }
-      {
-        matches = [
-          {
-            app-id = "^thunar-volman$";
-          }
-        ];
-        open-floating = true;
-      }
-      {
-        matches = [
-          {
-            app-id = "^steam";
-          }
-        ];
-        default-column-width = {proportion = 0.33333;};
-        default-window-height = {proportion = 0.5;};
-        open-floating = true;
-        open-focused = false;
-      }
-      {
-        matches = [
-          {
-            app-id = "^ghostty$";
-          }
-        ];
-        open-focused = true;
-        default-column-width = {proportion = 0.33333;};
-        default-window-height = {proportion = 0.5;};
-      }
-      {
-        matches = [
-          {
-            app-id = "^bottom.desktop";
-          }
-        ];
-        default-column-width = {proportion = 0.33333;};
-        default-window-height = {proportion = 0.33333;};
-        open-focused = false;
-      }
-      {
-        matches = [
-          {
-            title = "^VSCodium";
-          }
-        ];
-        default-column-width = {proportion = 0.5;};
-        open-focused = true;
-      }
-      {
-        matches = [
-          {
-            title = "^Affinity";
-          }
-        ];
-        default-column-width = {proportion = 0.5;};
-        open-focused = true;
-        block-out-from = "screencast";
-      }
-      {
-        matches = [
-          {
-            title = "^Blender";
-          }
-        ];
-        default-column-width = {proportion = 0.5;};
-        open-focused = true;
-        #block-out-from = "screencast";
-      }
-      {
-        matches = [
-          {
-            title = "^Davinci";
-          }
-        ];
-        open-maximized = true;
-        open-focused = true;
-        block-out-from = "screencast";
-      }
-      {
-        matches = [
-          {
-            title = "^vencord";
-          }
-        ];
-        default-column-width = {proportion = 0.33333;};
-        open-focused = true;
-        block-out-from = "screencast";
-      }
-      {
-        matches = [
-          {
-            title = "^Proton$";
-          }
-        ];
-        open-focused = true;
-        block-out-from = "screencast";
-        default-column-width = {proportion = 0.66667;};
-      }
-      {
-        matches = [
-          {
-            app-id = "^fcha";
-          }
-        ];
-        open-focused = false;
-        block-out-from = "screencast";
-        default-column-width = {proportion = 0.66667;};
-      }
-      {
-        matches = [
-          {
-            title = "^Firestorm";
-          }
-        ];
-        open-maximized = true;
-        open-focused = true;
-        block-out-from = "screencast";
-      }
-      {
-        matches = [
-          {
-            title = "^JHe";
-          }
-        ];
-        open-focused = false;
-        open-floating = true;
-        block-out-from = "screencast";
-        default-column-width = {proportion = 0.66667;};
+        matches = [{ app-id = "^(steam|chrome-app\\.restream\\.io__home-Default|chrome-claude\\.ai__new-Default|chrome-github\\.com__-Default|chrome-gitlab\\.com__theblackdon_black-don-os-Default|chrome-mail\\.proton\\.me__u_0_inbox-Default|chrome-meet\\.google\\.com__-Default|chrome-messages\\.google\\.com__web_u_1_conversations-Default|chrome-web\\.descript\\.com__-Default)$"; }];
+        opacity = 0.95;
       }
     ];
   };

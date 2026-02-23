@@ -1,10 +1,14 @@
-{ pkgs, lib, ... }: 
 {
-	home.packages = with pkgs; [
+  pkgs,
+  lib,
+  ...
+}: {
+  home.packages = with pkgs; [
     vesktop
   ];
 
-	programs.vesktop = {
-		enable = true;
-	};
+  programs.vesktop = {
+    enable = true;
+  };
 }
+

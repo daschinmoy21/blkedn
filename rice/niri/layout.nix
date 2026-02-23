@@ -1,77 +1,36 @@
 {...}: {
   programs.niri.settings = {
     layout = {
-      gaps = 4;
-      background-color = "00000000";
-      center-focused-column = "on-overflow";
+      gaps = 9;
+      center-focused-column = "never"; # default is never in niri if not specified, black-don-os didn't specify so likely default. Rice had "on-overflow". I'll stick to default if not present.
+      
       preset-column-widths = [
-        # { proportion = 0.25; }
-        {proportion = 0.33333;}
-        {proportion = 0.5;}
-        {proportion = 0.66667;}
+        { proportion = 0.5; }
+        { proportion = 0.66667; }
+        { proportion = 1.0; }
       ];
-      preset-window-heights = [
-        # { proportion = 0.25; }
-        {proportion = 0.33333;}
-        {proportion = 0.5;}
-        {proportion = 0.66667;}
-        {proportion = 1.0;}
-      ];
-      struts = {
-        bottom = 7;
-        top = 7;
-        left = 7;
-        right = 7;
-      };
 
-      default-column-display = "tabbed";
+      default-column-width = { proportion = 0.5; };
 
-      tab-indicator = {
-        enable = true;
-        hide-when-single-tab = true;
-        place-within-column = true;
-        position = "left";
-        width = 4.0;
-        length.total-proportion = 0.66667;
-        corner-radius = 3.0;
-        gap = 4.0;
-        gaps-between-tabs = 2.0;
-        active.color = "#15e62ae3";
-        inactive.gradient.from = "#1c68e2ff";
-        inactive.gradient.to = "#b51de0ff";
-        urgent.color = "#e44949ff";
-      };
+      focus-ring.enable = false; # black-don-os has focus-ring { off }
 
-      default-column-width.proportion = 0.33333;
-      focus-ring = {
-        enable = true;
-        width = 1;
-        #active.color = "#000000";
-        #inactive.color = "#000000";
-        urgent.color = "#e44949ed";
-      };
       border = {
         enable = true;
-        /*
-        active.gradient.angle = 225;
-        active.gradient.relative-to = "workspace-view";
-        active.gradient.from = "#1c68e2e6";
-        active.gradient.to = "#bb38dff6";
-        */
-        inactive.gradient.angle = 225;
-        inactive.gradient.relative-to = "workspace-view";
-        inactive.gradient.from = "#1c68e2e6";
-        inactive.gradient.to = "#bb38dff6";
-        active.color = "#72e25096";
-        #inactive.color = "#000000";
-        width = 1.5;
+        width = 2;
+        active.color = "#cba6f7";
+        inactive.color = "#45475a";
+        urgent.color = "#f5c2e7";
       };
+
       shadow = {
         enable = true;
-        spread = 8;
-        softness = 28;
-        draw-behind-window = true;
+        softness = 30;
+        spread = 5;
+        offset = { x = 0; y = 5; };
+        color = "#00000077"; # #0007 is #00000077 in hex (77 is rough approx of 7 repeating or 7/15? No, #0007 is argb or rgba? CSS #0007 usually means #00000077. niri uses CSS colors? KDL uses string colors. black-don-os used "#0007". I will use standard 8-digit hex for safety or just pass the string if niri accepts it. Niri accepts CSS colors. #0007 expands to #00000077.
       };
+      
+      struts = {}; # empty in black-don-os
     };
   };
 }

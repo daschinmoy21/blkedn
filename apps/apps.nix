@@ -5,6 +5,7 @@
     ./editors.nix
     ./ghostty.nix
     ./tui.nix
+    ./virt.nix
   ];
 
   programs = {

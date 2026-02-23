@@ -5,11 +5,10 @@
   lib,
   ...
 }: {
-  home.username = "jlc";
-  home.homeDirectory = "/home/jlc";
+  home.username = "crimxnhaze";
+  home.homeDirectory = "/home/crimxnhaze";
 
   imports = [
-    inputs.vicinae.homeManagerModules.default
     ./rice/rice.nix
     ./apps/apps.nix
     ./hw/hw.nix
@@ -21,6 +20,7 @@
   nixpkgs.config.allowUnfree = true;
 
   home.packages = with pkgs; [
+    inputs.antigravity-nix.packages.x86_64-linux.default
   ];
 
   home.sessionVariables = {

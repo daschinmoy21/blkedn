@@ -12,141 +12,194 @@
       "call"
     ]
     ++ (pkgs.lib.splitString " " cmd);
+    
+  # Helper to make spawn actions cleaner  
+  spawn = cmd: if builtins.isList cmd then cmd else [ cmd ];
 in {
-  # okay let's try this
   programs.niri.settings.binds = with config.lib.niri.actions; {
-    # <name>.hotkey-overlay.title = ""; # Custom Titling
-    # noctalia bindings first
+    # === System & Overview ===
+    "Mod+X".action = toggle-overview;
+    "Mod+O".action = toggle-overview;
+    "Mod+Shift+Slash".action = show-hotkey-overlay;
 
-    # "Mod+Space".action.spawn = noctalia "launcher toggle";
-    # "Mod+Space".hotkey-overlay.title = "App Launcher";
+    # === Application Launchers ===
+    "Mod+T".action.spawn = spawn "${pkgs.ghostty}/bin/ghostty"; # Changed to match existing terminal choice often used, or use config.terminal if available, but staying safe with what was there
+    "Mod+Return".action.spawn = spawn "${pkgs.ghostty}/bin/ghostty";
+     "Mod+Space".action.spawn = noctalia "launcher toggle"; # Using noctalia as main launcher as per black-don-os reference
+    #"Mod+Space".action.spawn = spawn "fuzzel";
 
-    "Mod+Alt+S".action.spawn = noctalia "controlCenter toggle";
-    "Mod+Alt+S".hotkey-overlay.title = "Control Center 🏠";
+    "Mod+Comma".action.spawn = noctalia "settings toggle";
+    "Mod+Alt+S".action.spawn = noctalia "settings toggle";
+    "Mod+Shift+C".action.spawn = noctalia "controlCenter toggle";
 
-    "Mod+Alt+Comma".action.spawn = noctalia "settings toggle";
-    "Mod+Alt+Comma".hotkey-overlay.title = "Settings 🗒️";
+    # === Audio Controls (Wpctl) ===
+    "XF86AudioRaiseVolume".action.spawn = spawn ["wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "5%+"];
+    "XF86AudioLowerVolume".action.spawn = spawn ["wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "5%-"];
+    "XF86AudioMute".action.spawn = spawn ["wpctl" "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle"];
+    "XF86AudioMicMute".action.spawn = spawn ["wpctl" "set-mute" "@DEFAULT_AUDIO_SOURCE@" "toggle"];
+    "XF86AudioRaiseVolume".allow-when-locked = true;
+    "XF86AudioLowerVolume".allow-when-locked = true;
+    "XF86AudioMute".allow-when-locked = true;
+    "XF86AudioMicMute".allow-when-locked = true;
 
-    "Mod+Shift+Comma".action.spawn = noctalia "sessionMenu toggle";
-    "Mod+Shift+Comma".hotkey-overlay.title = "Show Session Menu ⛓️";
+    # === Security ===
+    "Mod+Shift+Q".action = quit;
+    
+    # === Keyboard Brightness ===
+    "XF86KbdBrightnessUp".action.spawn = spawn ["kbdbrite.sh" "up"];
+    "XF86KbdBrightnessDown".action.spawn = spawn ["kbdbrite.sh" "down"];
+    "XF86KbdBrightnessUp".allow-when-locked = true;
+    "XF86KbdBrightnessDown".allow-when-locked = true;
 
-    # "Mod+Alt+V".action.spawn = noctalia "launcher clipboard";
-    # "Mod+Alt+V".hotkey-overlay.title = "Clipboard";
-
-    "Mod+Alt+Escape".action.spawn = noctalia "lockScreen lock";
-    "Mod+Alt+Escape".hotkey-overlay.title = "Lock Screen ⛓️";
-
-    "Mod+Shift+Alt+Escape".action.spawn = noctalia "sessionMenu lockAndSuspend";
-    "Mod+Shift+Alt+Escape".hotkey-overlay.title = "Suspend System 💤";
-
-    "Mod+Insert".action.spawn = noctalia "screenRecorder toggle";
-    "Mod+Insert".hotkey-overlay.title = "Screen Recording 🎬";
-
-    "Mod+Home".action.spawn = noctalia "notifications toggleDND";
-    "Mod+Home".hotkey-overlay.title = "Toggle Do-Not-Disturb 🔕";
-    "Mod+Home".allow-when-locked = true;
-
-    "Mod+Delete".action.spawn = noctalia "notifications clear";
-    "Mod+Delete".hotkey-overlay.title = "Clear Notifications 🔔";
-    "Mod+Delete".allow-when-locked = true;
-
-    "Mod+End".action.spawn = noctalia "notifications dismissAll";
-    "Mod+End".hotkey-overlay.title = "Dismiss Notifications 🔔";
-    "Mod+End".allow-when-locked = true;
-
-    "Mod+Prior".action.spawn = noctalia "bar toggle";
-    "Mod+Prior".hotkey-overlay.title = "Toggle Bar 🎩";
-
-    "Mod+Next".action.spawn = noctalia "wallpaper random";
-    "Mod+Next".hotkey-overlay.title = "Random Wallpaper ";
-    "Mod+Next".allow-when-locked = true;
-
-    "Mod+Alt+Next".action.spawn = noctalia "wallpaper toggle";
-    "Mod+Alt+Next".hotkey-overlay.title = "Select Wallpaper 🖼️";
-
-    "Mod+Shift+Next".action.spawn = noctalia "wallpaper toggleAutomation";
-    "Mod+Shift+Next".hotkey-overlay.title = "Toggle Wallpaper Cycling";
-
-    # and now niri's
-
-    "Mod+Grave".action = show-hotkey-overlay;
-
-    "Mod+Print".action.screenshot = {show-pointer = false;};
-    "Mod+Alt+Print".action.screenshot-window = {write-to-disk = true;};
-
-    "Mod+1".action = focus-workspace 1;
-    "Mod+2".action = focus-workspace 2;
-    "Mod+3".action = focus-workspace 3;
-    "Mod+4".action = focus-workspace 4;
-    "Mod+5".action = focus-workspace 5;
-    "Mod+6".action = focus-workspace 6;
-    "Mod+7".action = focus-workspace 7;
-    "Mod+8".action = focus-workspace 8;
-    "Mod+9".action = focus-workspace 9;
-    "Mod+0".action = focus-workspace 10;
-
-    "Mod+Alt+Tab".action = toggle-window-floating;
-    "Mod+Shift+Tab".action = switch-focus-between-floating-and-tiling;
-    "Mod+Tab".action = toggle-overview;
-    "Mod+Shift+Q".action = close-window;
-
-    "Mod+R".action = switch-preset-column-width-back;
-    "Mod+Alt+R".action = switch-preset-window-height-back;
-
-    "Mod+Shift+C".action = center-column;
-    "Mod+Alt+C".action = center-visible-columns;
-    "Mod+T".action = toggle-column-tabbed-display;
-
+    # === Window Management ===
+    "Mod+Q".action = close-window;
     "Mod+Alt+F".action = maximize-column;
     "Mod+Shift+F".action = fullscreen-window;
+    "Mod+W".action = toggle-window-floating;
+    "Mod+Ctrl+W".action = switch-focus-between-floating-and-tiling;
+    "Mod+V".action = toggle-column-tabbed-display;
 
-    "Mod+L".action = focus-column-right-or-first;
-    "Mod+H".action = focus-column-left-or-last;
-    "Mod+K".action = focus-window-or-workspace-up;
-    "Mod+J".action = focus-window-or-workspace-down;
+    # === Focus Navigation ===
+    "Mod+Left".action = focus-column-left;
+    "Mod+Down".action = focus-window-down;
+    "Mod+Up".action = focus-window-up;
+    "Mod+Right".action = focus-column-right;
+    "Mod+H".action = focus-column-left;
+    "Mod+J".action = focus-window-down;
+    "Mod+K".action = focus-window-up;
+    "Mod+L".action = focus-column-right;
 
-    "Mod+Alt+L".action = move-column-right;
-    "Mod+Alt+H".action = move-column-left;
-    "Mod+Shift+L".action = move-column-to-first;
-    "Mod+Shift+H".action = move-column-to-last;
+    # === Window Movement ===
+    "Mod+Shift+Left".action = move-column-left;
+    "Mod+Shift+Down".action = move-window-down;
+    "Mod+Shift+Up".action = move-window-up;
+    "Mod+Shift+Right".action = move-column-right;
+    "Mod+Shift+H".action = move-column-left;
+    "Mod+Shift+J".action = move-window-down;
+    "Mod+Shift+K".action = move-window-up;
+    "Mod+Shift+L".action = move-column-right;
 
-    "Mod+Shift+K".action = move-window-up-or-to-workspace-up;
-    "Mod+Shift+J".action = move-window-down-or-to-workspace-down;
-    "Mod+Alt+K".action = move-column-to-workspace-up;
-    "Mod+Alt+J".action = move-column-to-workspace-down;
+    # === Column Navigation ===
+    "Mod+Home".action = focus-column-first;
+    "Mod+End".action = focus-column-last;
+    "Mod+Ctrl+Home".action = move-column-to-first;
+    "Mod+Ctrl+End".action = move-column-to-last;
 
+    # === Monitor Navigation ===
+    "Mod+Ctrl+Left".action = focus-monitor-left;
+    "Mod+Ctrl+Right".action = focus-monitor-right;
+    "Mod+Ctrl+H".action = focus-monitor-left;
+    "Mod+Ctrl+J".action = focus-monitor-down;
+    "Mod+Ctrl+K".action = focus-monitor-up;
+    "Mod+Ctrl+L".action = focus-monitor-right;
+
+    # === Move to Monitor ===
+    "Mod+Shift+Ctrl+Left".action = move-column-to-monitor-left;
+    "Mod+Shift+Ctrl+Down".action = move-column-to-monitor-down;
+    "Mod+Shift+Ctrl+Up".action = move-column-to-monitor-up;
+    "Mod+Shift+Ctrl+Right".action = move-column-to-monitor-right;
+    "Mod+Shift+Ctrl+H".action = move-column-to-monitor-left;
+    "Mod+Shift+Ctrl+J".action = move-column-to-monitor-down;
+    "Mod+Shift+Ctrl+K".action = move-column-to-monitor-up;
+    "Mod+Shift+Ctrl+L".action = move-column-to-monitor-right;
+
+    # === Workspace Navigation ===
+    "Mod+U".action = focus-workspace-down;
+    "Mod+I".action = focus-workspace-up;
+    "Mod+Ctrl+Down".action = focus-workspace-down;
+    "Mod+Ctrl+Up".action = focus-workspace-up;
+    "Mod+Ctrl+Alt+Down".action = move-column-to-workspace-down;
+    "Mod+Ctrl+Alt+Up".action = move-column-to-workspace-up;
+    "Mod+Shift+Page_Down".action = move-workspace-down;
+    "Mod+Shift+Page_Up".action = move-workspace-up;
+    "Mod+Shift+U".action = move-workspace-down;
+    "Mod+Shift+I".action = move-workspace-up;
+
+    # === Mouse Wheel Navigation ===
+    "Mod+WheelScrollDown".action = focus-workspace-down;
+    "Mod+WheelScrollDown".cooldown-ms = 150;
+    "Mod+WheelScrollUp".action = focus-workspace-up;
+    "Mod+WheelScrollUp".cooldown-ms = 150;
+    "Mod+Ctrl+WheelScrollDown".action = move-column-to-workspace-down;
+    "Mod+Ctrl+WheelScrollDown".cooldown-ms = 150;
+    "Mod+Ctrl+WheelScrollUp".action = move-column-to-workspace-up;
+    "Mod+Ctrl+WheelScrollUp".cooldown-ms = 150;
+    
+    "Mod+WheelScrollRight".action = focus-column-right;
+    "Mod+WheelScrollLeft".action = focus-column-left;
+    "Mod+Ctrl+WheelScrollRight".action = move-column-right;
+    "Mod+Ctrl+WheelScrollLeft".action = move-column-left;
+    
+    "Mod+Shift+WheelScrollDown".action = focus-column-right;
+    "Mod+Shift+WheelScrollUp".action = focus-column-left;
+    "Mod+Ctrl+Shift+WheelScrollDown".action = move-column-right;
+    "Mod+Ctrl+Shift+WheelScrollUp".action = move-column-left;
+
+    # === Numbered Workspaces ===
+    "Mod+1".action = { focus-workspace = 1; };
+    "Mod+2".action = { focus-workspace = 2; };
+    "Mod+3".action = { focus-workspace = 3; };
+    "Mod+4".action = { focus-workspace = 4; };
+    "Mod+5".action = { focus-workspace = 5; };
+    "Mod+6".action = { focus-workspace = 6; };
+    "Mod+7".action = { focus-workspace = 7; };
+    "Mod+8".action = { focus-workspace = 8; };
+    "Mod+9".action = { focus-workspace = 9; };
+
+    "Mod+Ctrl+1".action = { move-column-to-workspace = 1; };
+    "Mod+Ctrl+2".action = { move-column-to-workspace = 2; };
+    "Mod+Ctrl+3".action = { move-column-to-workspace = 3; };
+    "Mod+Ctrl+4".action = { move-column-to-workspace = 4; };
+    "Mod+Ctrl+5".action = { move-column-to-workspace = 5; };
+    "Mod+Ctrl+6".action = { move-column-to-workspace = 6; };
+    "Mod+Ctrl+7".action = { move-column-to-workspace = 7; };
+    "Mod+Ctrl+8".action = { move-column-to-workspace = 8; };
+    "Mod+Ctrl+9".action = { move-column-to-workspace = 9; };
+
+    # === Column Management ===
     "Mod+BracketLeft".action = consume-or-expel-window-left;
     "Mod+BracketRight".action = consume-or-expel-window-right;
+    "Mod+Period".action = expel-window-from-column;
 
-    # System Commands
+    # === Sizing & Layout ===
+    "Mod+R".action = switch-preset-column-width;
+    "Mod+Shift+R".action = switch-preset-window-height;
+    "Mod+Ctrl+R".action = reset-window-height;
+    "Mod+Ctrl+F".action = expand-column-to-available-width;
+    "Mod+Ctrl+C".action = center-column;
 
-    "Mod+Return".action.spawn = ["ghostty" "-e" "fish"];
-    "Mod+Return".hotkey-overlay.title = "Open Terminal ⌨️";
+    # === Manual Sizing ===
+    "Mod+Minus".action = set-column-width "-10%";
+    "Mod+Equal".action = set-column-width "+10%";
+    "Mod+Shift+Minus".action = set-window-height "-10%";
+    "Mod+Shift+Equal".action = set-window-height "+10%";
 
-    "Mod+E".action.spawn = ["thunar"]; #open file explorer
-    "Mod+E".hotkey-overlay.title = "Open File Explorer 📂";
+    # === Screenshots ===
+    "Mod+Shift+S".action.screenshot = {};
+    "XF86Launch1".action.screenshot = {};
+    "Ctrl+XF86Launch1".action.screenshot-screen = {};
+    "Alt+XF86Launch1".action.screenshot-window = {};
+    "Print".action.screenshot = {};
+    "Ctrl+Print".action.screenshot-screen = {};
+    "Alt+Print".action.screenshot-window = {};
 
-    #"Mod+Shift+S".action.spawn = ["firestorm"]; #open SL Viewer
-    #"Mod+Shift+S".hotkey-overlay.title = "Open Firestorm 🔥";
+    # === Custom Application Launchers ===
+    "Mod+G".action.spawn = spawn "telegram-desktop"; 
+    # "Mod+Shift+Ctrl+C".action.spawn = spawn ["ghostty" "claude"];
+    "Ctrl+Mod+N".action.spawn = spawn "obsidian";
+    "Mod+B".action.spawn = spawn "firefox"; # Default to firefox if browser var not clear
+    "Mod+D".action.spawn = spawn "vesktop";
+    "Mod+S".action.spawn = spawn "steam";
+    "Mod+Shift+O".action.spawn = spawn "obs";
+    "Mod+F".action.spawn = spawn "thunar";
+    "Ctrl+Mod+V".action.spawn = spawn "virt-manager";
+    
+    # === Color picker ===
+    # "Mod+C".action.spawn = [ "sh" "-c" "niri msg pick-color | grep 'Hex:' | cut -d' ' -f2 | wl-copy" ];
 
-    "Mod+Ctrl+S".action.spawn = ["ghostty" "-e" "btm"]; #open system monitor
-    "Mod+Ctrl+S".hotkey-overlay.title = "Open System Monitoring 📊";
-
-    # vicinae commands
-
-    "Mod+Space".action.spawn = ["vicinae" "toggle"];
-    "Mod+Space".hotkey-overlay.title = "App Launcher 🚀";
-
-    "Mod+Alt+V".action.spawn = ["vicinae" "vicinae://extensions/vicinae/clipboard/history"];
-    "Mod+Alt+V".hotkey-overlay.title = "Clipboard 📝";
-
-    "Mod+Alt+E".action.spawn = ["vicinae" "vicinae://extensions/vicinae/vicinae/search-emojis"];
-    "Mod+Alt+E".hotkey-overlay.title = "Emojis 🤠";
-
-    # "Mod+T".action.spawn = ["vicinae" "vicinae://extensions/asubbotin@raycast/pomodoro/pomodoro-control-timer"];
-    #"Mod+T".hotkey-overlay.title = "Start Pomodoro Timer ⏲️";
-
-    #"Mod+Alt+T".action.spawn = ["vicinae" "vicinae://extensions/ThatNerd@raycast/timers/startCustomTimer"];
-    #"Mod+Alt+T".hotkey-overlay.title = "Start Custom Timer ⏲️";
+    # === Dynamic Cast ===
+    # "Mod+P".action = set-dynamic-cast-monitor; # These might need niri version check or implementation check
+    # "Mod+Shift+P".action = set-dynamic-cast-window;
+    # "Mod+Ctrl+P".action = clear-dynamic-cast-target;
   };
 }

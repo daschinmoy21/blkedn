@@ -16,13 +16,39 @@
       };
     in {
       slowdown = 1.0;
-      workspace-switch = anim;
-      overview-open-close = anim;
-      horizontal-view-movement = anim;
-      window-movement = anim;
-      window-resize = anim;
-      window-open = anim;
-      window-close = anim;
+      workspace-switch = {
+        spring = {
+          damping-ratio = 1.0;
+          stiffness = 1000;
+          epsilon = 0.0001;
+        };
+      };
+      window-open = {
+        easing = {
+          duration-ms = 150;
+          curve = "ease-out-expo";
+        };
+      };
+      window-close = {
+        easing = {
+          duration-ms = 150;
+          curve = "ease-out-quad";
+        };
+      };
+      horizontal-view-movement = {
+        spring = {
+          damping-ratio = 1.0;
+          stiffness = 800;
+          epsilon = 0.0001;
+        };
+      };
+      window-movement = {
+        spring = {
+          damping-ratio = 1.0;
+          stiffness = 800;
+          epsilon = 0.0001;
+        };
+      };
     };
   };
 }

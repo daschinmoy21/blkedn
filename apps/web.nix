@@ -1,13 +1,12 @@
 {
   pkgs,
   lib,
+  inputs,
   ...
 }: {
   home.packages = with pkgs; [
+    inputs.zen-browser.packages.${pkgs.system}.default
     firefox
-    protonmail-desktop
-    proton-pass
-    protonvpn-gui
     vesktop
   ];
 }

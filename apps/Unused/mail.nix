@@ -1,10 +1,14 @@
-{ pkgs, lib, ... }: 
 {
-	home.packages = with pkgs; [
+  pkgs,
+  lib,
+  ...
+}: {
+  home.packages = with pkgs; [
     protonmail-desktop
   ];
 
-	programs.protonmail-desktop = {
-		enable = true;
-	};
+  programs.protonmail-desktop = {
+    enable = false;
+  };
 }
+

@@ -12,8 +12,10 @@
     ./hardware-configuration.nix
     ./host/host-configuration.nix
     ./hw/virt.nix
+    ./hw/nvidia.nix
+    ./host/virtualization.nix
     inputs.home-manager.nixosModules.home-manager
-    inputs.matugen.nixosModules.default
+    # inputs.matugen.nixosModules.default
   ];
 
   # Bootloader.
@@ -21,7 +23,7 @@
   boot.loader.efi.canTouchEfiVariables = true;
 
   # Use latest kernel.
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.kernelPackages = pkgs.linuxPackages;
 
   # kernel modules for system fan control
   boot.kernelModules = ["nct6775"];
@@ -43,10 +45,10 @@
     # also pass inputs to home-manager modules
     extraSpecialArgs = {inherit inputs;};
     users = {
-      "jlc" = import ./home.nix;
+      "crimxnhaze" = import ./home.nix;
     };
     # Allow backups when files conflict
-    backupFileExtension = "bak";
+    backupFileExtension = "hm-backup";
   };
 
   # Some programs need SUID wrappers, can be configured further or are

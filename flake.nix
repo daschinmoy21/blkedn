@@ -23,15 +23,26 @@
     noctalia = {
       url = "github:noctalia-dev/noctalia-shell";
       inputs.nixpkgs.follows = "nixpkgs";
-      inputs.quickshell.follows = "quickshell"; # Use same quickshell version
+      # inputs.quickshell.follows = "quickshell"; # Use same quickshell version
     };
 
     matugen = {
       url = "github:/InioX/Matugen";
     }; #tool to grab color-scheme from wallpapers
 
-    vicinae = {
-      url = "github:vicinaehq/vicinae";
+    nvf = {
+      url = "github:notashelf/nvf";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    zen-browser = {
+      url = "github:0xc000022070/zen-browser-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    antigravity-nix = {
+      url = "github:jacopone/antigravity-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     #affinity-nix.url = "github:mrshmllow/affinity-nix";
@@ -42,17 +53,22 @@
     nixpkgs,
     home-manager,
     niri,
-    vicinae,
+    nvf,
+    zen-browser,
+    antigravity-nix,
     #affinity-nix,
     ...
   } @ inputs: let
     # users = "jlc";
     system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.x86_64-linux;
-    specialArgs = {inherit inputs system;};
+    specialArgs = {
+      inherit inputs system;
+      zen-browser = zen-browser.packages.${system}.default;
+    };
   in {
     formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.alejandra;
-    nixosConfigurations.blkedn =
+    nixosConfigurations.nixos =
       nixpkgs.lib.nixosSystem
       {
         system = system;
@@ -80,13 +96,12 @@
       };
     in {
       homeConfigurations = {
-        "jlc" =
+        "crimxnhaze" =
           home-manager.lib.homeManagerConfiguration
           {
             pkgs = pkgs;
             modules = [
               ./home.nix
-              vicinae.homeManagerModules.default
             ];
           };
       };

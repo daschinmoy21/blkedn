@@ -6,11 +6,12 @@
   ...
 }: {
   imports = [
-    ./vicinae.nix
     ./noctalia.nix
     ./niri.nix
+    ./nvf.nix
+    ./evil-helix.nix
     #./matugen.nix
-    inputs.matugen.nixosModules.default
+    # inputs.matugen.nixosModules.default
   ];
 
   gtk = {
@@ -26,16 +27,30 @@
       package = pkgs.dracula-icon-theme;
     };
 
-    /*
-      theme = {
-      name = "Matugen";
-      package = inputs.matugen.packages.${pkgs.stdenv.hostPlatform.system}.default;
+    theme = {
+      name = "Adwaita-dark";
+      package = pkgs.gnome-themes-extra;
     };
-    */
+
     gtk3 = {
-      extraConfig.gtk-application-prefer-dark-theme = true;
+      extraConfig = {
+        gtk-application-prefer-dark-theme = 1;
+      };
+    };
+
+    gtk4 = {
+      extraConfig = {
+        gtk-application-prefer-dark-theme = 1;
+      };
     };
   };
+
+  qt = {
+    enable = true;
+    platformTheme.name = "gtk";
+    style.name = "adwaita-dark";
+  };
+
 
   gtk.gtk2.force = true;
   #xdg.configFile."gtk-3.0/gtk.css".source = "${config.programs.matugen.theme.files}/.config/gtk-3.0/gtk.css";

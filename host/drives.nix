@@ -6,32 +6,30 @@
   ...
 }: {
   # Mount Points for SSDs
-  fileSystems."/home/jlc/SSD1" = {
-    device = "/dev/disk/by-uuid/97f253c7-bac6-43d3-b8a9-cc0903c15b7f";
+  fileSystems."/home/crimxnhaze/SSD1" = {
+    device = "/dev/disk/by-uuid/df72bd94-2cef-4dca-a5f5-c7e8516a349d";
     fsType = "ext4";
     options = ["nofail" "defaults"];
   };
 
-  fileSystems."/home/jlc/SSD2" = {
-    device = "/dev/disk/by-uuid/10690921-7698-4027-a3c2-2df47ceaa7d7";
-    fsType = "ext4";
-    options = ["nofail" "defaults"];
+  fileSystems."/home/crimxnhaze/SSD2" = {
+    device = "/dev/disk/by-uuid/23B0AE5D0C7C1589";
+    fsType = "ntfs";
+    options = ["nofail" "uid=1000" "gid=100"];
   };
 
-  fileSystems."/home/jlc/SSD3" = {
-    device = "/dev/disk/by-uuid/659ff393-6687-4c0f-becc-dae68e26f986";
-    fsType = "ext4";
-    options = ["nofail" "defaults"];
+  fileSystems."/home/crimxnhaze/SSD3" = {
+    device = "/dev/disk/by-uuid/84F25C85F25C7CFC";
+    fsType = "ntfs";
+    options = ["nofail" "uid=1000" "gid=100"];
   };
 
-  # Mount Point for NAS
-  environment.systemPackages = [pkgs.cifs-utils];
-  fileSystems."/home/jlc/NAS" = {
-    device = "//192.168.0.107/nas-share";
-    fsType = "cifs";
-    options = let
-      # this line prevents hanging on network split
-      automount_opts = "x-systemd.automount,noauto,x-systemd.idle-timeout=60,x-systemd.device-timeout=5s,x-systemd.mount-timeout=5s";
-    in ["${automount_opts},credentials=/etc/nixos/smb-secrets" "nofail"];
-  };
+  systemd.tmpfiles.rules = [
+    "d /home/crimxnhaze/SSD1 0755 crimxnhaze users"
+  ];
+
+  swapDevices = [ {
+    device = "/var/lib/swapfile";
+    size = 20 * 1024;
+  } ];
 }

@@ -65,12 +65,12 @@
         capsuleOpacity = 1;
         density = "default";
         floating = false;
-        transparent = false;
+        transparent = true;
         position = "top";
         marginHorizontal = 1;
         marginVertical = 0.47;
-        showCapsule = true;
-        showOutline = true;
+        showCapsule = false;
+        showOutline = false;
         outerCorners = true;
         widgets = {
           left = [
@@ -79,9 +79,6 @@
               customIconPath = "";
               icon = "";
               useDistroLogo = true;
-            }
-            {
-              id = "Tray";
             }
             {
               id = "Workspace";
@@ -100,21 +97,6 @@
           ];
           center = [
             {
-              id = "Clock";
-              customFont = "AtkynsonMono NFP";
-              formatHorizontal = "h:mm AP MM/dd";
-              formatVertical = "h mm AP - MM dd";
-              useCustomFont = true;
-              usePrimaryColor = true;
-            }
-            {
-              id = "NotificationHistory";
-              hideWhenZero = true;
-              showUnreadBadge = true;
-            }
-          ];
-          right = [
-            {
               id = "MediaMini";
               hideMode = "hidden";
               maxWidth = 175;
@@ -123,6 +105,25 @@
               showVisualizer = true;
               useFixedWidth = false;
               visualizerType = "linear";
+            }
+            {
+              id = "Clock";
+              customFont = "AtkynsonMono NFP";
+              formatHorizontal = "h:mm AP MM/dd";
+              formatVertical = "h mm AP - MM dd";
+              useCustomFont = true;
+              usePrimaryColor = true;
+            }
+          ];
+          right = [
+            {
+              id = "Tray";
+            }
+            {
+              id = "Network";
+            }
+            {
+              id = "Brightness";
             }
             {
               id = "Volume";
@@ -140,6 +141,17 @@
               diskPath = [
                 "/"
               ];
+            }
+            {
+              id = "NotificationHistory";
+            }
+            {
+              id = "Battery";
+              showPercentage = true;
+            }
+            {
+              id = "Session";
+              showLabel = false;
             }
           ];
         };
@@ -159,7 +171,7 @@
       general = {
         animationDisabled = false;
         animationSpeed = 1;
-        avatarImage = "/home/jlc/Pictures/Icons/jlc.png";
+        avatarImage = "/home/crimxnhaze/Downloads/Toji tame impala pfp.jpg";
         compactLockScreen = false;
         dimDesktop = false;
         forceBlackScreenCorners = true;
@@ -177,12 +189,12 @@
         showWeekNumberInCalendar = false;
         use12hourFormat = true;
         useFahrenheit = true;
-        weatherEnabled = true;
+        weatherEnabled = false;
         monthBeforeDay = true;
-        name = "Philadelphia, USA";
-        showCalendarWeather = true;
+        name = "Asia/Kolkata"; # Utilizing timezone as name since specific city not requested
+        showCalendarWeather = false;
         firstDayOfWeek = -1;
-        weatherShowEffects = true;
+        weatherShowEffects = false;
       };
       calendar = {
         cards = [
@@ -322,7 +334,6 @@
         kitty = false;
         pywalfox = false;
         qt = true;
-        vicinae = true;
         code = true;
       };
 
@@ -343,20 +354,20 @@
 
       wallpaper = {
         defaultWallpaper = "/home/jlc/Pictures/wallpapers/tokyo_night-02.png";
-        directory = "/home/jlc/Pictures/wallpapers";
+        directory = "/home/crimxnhaze/walls";
         enableMultiMonitorDirectories = false;
         enabled = true;
         fillColor = "#000000";
         fillMode = "crop";
         monitors = [
           {
-            directory = "/home/jlc/Pictures/wallpapers";
+            directory = "/home/crimxnhaze/walls";
             name = "DP-3";
             wallpaper = "";
           }
         ];
-        randomEnabled = true;
-        randomIntervalSec = 1800;
+        randomEnabled = false;
+        randomIntervalSec = 30000;
         setWallpaperOnAllMonitors = true;
         transitionDuration = 1500;
         transitionEdgeSmoothness = 0.15;

@@ -18,29 +18,45 @@ in {
   environment.systemPackages = with pkgs; [
     # system tools
     bluez-headers # bluetooth enabling
+    pulseaudio # provides pactl
     alejandra #nix language formatting
     nix-init #tool of building packages
     xarchiver #GTK frontend for 7zip
     glibc #c language library
     dosfstools #create and check V/FAT file systems
+    ntfs3g # NTFS handling
     gnumake # 'make' commands
     wev #find keystrokes for wayland compsitor; helpful when altering keybinds
     nix-output-monitor
     nvd
+    opencode
+    discord
+    uv
+    gemini-cli
+    winboat
+    virtiofsd
+
+    google-cloud-sdk
+    btop
+    heroic
+    yazi
+    obsidian
+    element-desktop
 
     # git
     git
+    gh
     git-crypt #directory and file encryption
     gh #github cli tools
+    lazydocker
 
     # package managers
+    git
     wget
     curl
-    apt
-    cargo
+    pciutils
 
     #languages
-    python3
 
     # hardware control
     lm_sensors #tool for scanning system fans
@@ -60,7 +76,6 @@ in {
     vlc
     nicotine-plus # soulseek client
     picard # music metadata editor
-    feishin # Subsonic interface
     element-desktop #matrix client
     ani-cli #CLI anime streaming
     youtube-tui
@@ -72,16 +87,14 @@ in {
 
     obs-studio
     #olive-editor #video editor
-    davinci-resolve #video editor
+
     ffmpeg #video format converter
     obsidian # Notes organization
-    gimp-with-plugins
-    blender
 
     # productivity
     xournalpp #Notetaking
     libreoffice-fresh # Office Suite
-    kanri #kanban board
+
     hoard #CLI Command Organizer
     gtt #google translate tui
     tlrc #simiplified man pages written in rust
@@ -97,7 +110,6 @@ in {
 
     mangohud #process overlay
     lutris
-    xivlauncher
 
     # styling tools
     catppuccin-cursors.frappeDark
@@ -105,10 +117,18 @@ in {
     adwaita-icon-theme
     dracula-icon-theme
     kdePackages.fcitx5-configtool # IME Config tool
-    inputs.matugen.packages.x86_64-linux.default #matugen input
+    # inputs.matugen.packages.x86_64-linux.default #matugen input
 
     #greeter theme
     tuigreet
+
+    cloudflare-warp
+    spotify
+    ncspot
+    chromium
+    cacert
+
+    networkmanagerapplet
   ];
 
   # Enable programs defined by Home Manager modules.
@@ -147,19 +167,17 @@ in {
     niri.enable = true;
     niri.package = pkgs.niri-stable;
   };
-  niri-flake.cache.enable = false; #uncomment once cache is built
+  # niri-flake.cache.enable = false; #uncomment once cache is built
 
   # cachix sources
 
   nix.settings = {
     substituters = [
-      "https://vicinae.cachix.org"
       "https://ezkea.cachix.org"
       #"https://cache.garnix.io"
     ];
 
     trusted-public-keys = [
-      "vicinae.cachix.org-1:1kDrfienkGHPYbkpNj1mWTr7Fm1+zcenzgTizIcI3oc="
       "ezkea.cachix.org-1:ioBmUbJTZIKsHmWWXPe1FSFbeVe+afhfgqgTSNd34eI="
       #"cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
     ];

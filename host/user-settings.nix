@@ -6,10 +6,10 @@
   ...
 }: {
   # Define a user account. set a password with ‘passwd’.
-  users.users.jlc = {
+  users.users.crimxnhaze = {
     isNormalUser = true;
-    description = "JLC";
-    extraGroups = ["networkmanager" "wheel" "kvm" "libvirtd" "samba"];
+    description = "crimxnhaze";
+    extraGroups = ["networkmanager" "wheel" "kvm" "libvirtd" "samba" "docker" "vboxusers"];
     packages = with pkgs; [
       #  kdePackages.kate #useful to have on hand tbh!
       #  thunderbird
@@ -25,11 +25,11 @@
   };
 
   # Define hostname.
-  networking.hostName = "blkedn";
+  networking.hostName = "nixos";
   networking.firewall.extraCommands = ''iptables -t raw -A OUTPUT -p udp -m udp --dport 137 -j CT --helper netbios-ns'';
 
   # Set your time zone.
-  time.timeZone = "America/New_York";
+  time.timeZone = "Asia/Kolkata";
 
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";

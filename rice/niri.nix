@@ -14,8 +14,8 @@
     ./niri/layout.nix
     ./niri/windowrules.nix
     ./niri/layerrules.nix
-    ./niri/animations.nix
     ./niri/overview.nix
+    ./niri/portals.nix
   ];
 
   programs.niri = {

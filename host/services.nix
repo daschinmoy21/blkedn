@@ -15,10 +15,16 @@
     enable = true;
     powerOnBoot = true;
   };
+  
+  zramSwap.enable = true;
+
+  #cloudflare warp 
+  services.cloudflare-warp.enable = true;
 
   # Audio services - Pipewire by default
   services.pulseaudio.enable = false; #this is mutually exclusive w/ pipewire
   security.rtkit.enable = true;
+
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -45,7 +51,7 @@
   # enable portals for spawning extra windows
   xdg.portal = {
     enable = true;
-    wlr.enable = true;
+
     config = {
       common = {
         default = [
@@ -56,12 +62,13 @@
       };
       niri = {
         default = [
-          "gnome"
+          "gtk"
         ];
         "org.freedesktop.impl.portal.FileChooser" = ["gtk"];
         "org.freedesktop.impl.portal.OpenURI" = ["gtk"];
-        "org.freedesktop.impl.portal.ScreenCast" = ["gnome"];
-        "org.freedesktop.impl.portal.Screenshot" = ["gnome"];
+        "org.freedesktop.impl.portal.ScreenCast" = ["niri"];
+        "org.freedesktop.impl.portal.Screenshot" = ["niri"];
+
         "org.freedesktop.impl.portal.Secret" = ["gnome-keyring"];
       };
     };
@@ -170,5 +177,8 @@
 
     # Enable CUPS to print documents.
     printing.enable = true;
+
+    # Power management (required for Noctalia battery widget)
+    upower.enable = true;
   };
 }

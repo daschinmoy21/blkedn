@@ -10,5 +10,9 @@
   programs.ghostty = {
     enable = true;
     enableFishIntegration = true;
+    settings = {
+      theme = "Batman";
+      command = "${pkgs.fish}/bin/fish";
+    };
   };
 }
