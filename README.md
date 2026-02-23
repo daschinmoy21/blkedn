@@ -1,13 +1,12 @@
 <div align="center">
   <img src=".github/assets/nixos-dark-logo.svg" width="100">
-  
+
   <h1>dotfiles</h1>
-  
-  <i>JLC's NixOS Dotfiles.</i>
+
+  <i>JLC's NixOS Dotfiles. This is a fork of https://github.com/blkflth/blkedn.</i>
 
 [![Showcase](https://img.youtube.com/vi/pEOkPy0UQNA/0.jpg)](https://youtu.be/pEOkPy0UQNA)
 </div>
-
 
 ### Highlights:
 
@@ -25,6 +24,9 @@
 
 - [`Vicinae`](https://github.com/vicinaehq/vicinae)
   - _Raycast Inspired/Compatible Launcher. Also used for clipboard and utility functions._
+
+##### Virtualization
+- _Specialized configurations for virtualization (e.g., KVM, libvirt, VirtualBox) are included to provide a robust environment for running virtual machines._
 
 ---
 
