@@ -1,7 +1,7 @@
 <div align="center">
   <img src=".github/assets/nixos-dark-logo.svg" width="100">
 
-  <h1>dotfiles</h1>
+  <h1>Crimxnhaze's dotfiles</h1>
 
   <i>JLC's NixOS Dotfiles. This is a fork of https://github.com/blkflth/blkedn.</i>
 
