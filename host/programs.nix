@@ -27,21 +27,37 @@ in {
     ntfs3g # NTFS handling
     gnumake # 'make' commands
     wev #find keystrokes for wayland compsitor; helpful when altering keybinds
+    p7zip
+    ripgrep
+    postgresql_18
     nix-output-monitor
     nvd
     opencode
     discord
     uv
-    gemini-cli
-    winboat
-    virtiofsd
+gnome-disk-utility
+minikube
 
+    gemini-cli
+    # winboat
+    virtiofsd
+    qbittorrent
+    postman
+    zed-editor
+    wireguard-tools
+    localsend
+    statix
+    strawberry
+    termusic
     google-cloud-sdk
     btop
+    wgcf
     heroic
     yazi
     obsidian
     element-desktop
+    zathura
+    code-cursor-fhs
 
     # git
     git
@@ -157,7 +173,7 @@ in {
     xfconf.enable = true; #allow Thunar configs
     thunar = {
       enable = true;
-      plugins = with pkgs.xfce; [
+      plugins = with pkgs; [
         thunar-volman
         thunar-archive-plugin
       ];

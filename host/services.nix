@@ -5,8 +5,13 @@
   lib,
   ...
 }: {
+  imports = [
+    inputs.microvm.nixosModules.host
+  ];
+
   # Enable networking
   networking.networkmanager.enable = true;
+  systemd.services.NetworkManager-wait-online.enable = false;
   # Enables wireless support via wpa_supplicant.
   # networking.wireless.enable = true;
 
@@ -15,12 +20,13 @@
     enable = true;
     powerOnBoot = true;
   };
-  
+
   zramSwap.enable = true;
 
-  #cloudflare warp 
+services.udisks2.enable = true;
+  #cloudflare warp
   services.cloudflare-warp.enable = true;
-
+  services.flatpak.enable = true;
   # Audio services - Pipewire by default
   services.pulseaudio.enable = false; #this is mutually exclusive w/ pipewire
   security.rtkit.enable = true;
@@ -32,6 +38,18 @@
     pulse.enable = true;
     # If you want to use JACK applications, uncomment this
     #jack.enable = true;
+  };
+
+  services.postgresql = {
+    enable = true;
+    package = pkgs.postgresql_18;
+    ensureDatabases = ["crimxnhaze"];
+    ensureUsers = [
+      {
+        name = "crimxnhaze";
+        ensureDBOwnership = true;
+      }
+    ];
   };
 
   # enable OpenGL
@@ -87,6 +105,7 @@
   # Fonts
   fonts = {
     packages = with pkgs; [
+      iosevka
       nerd-fonts.atkynson-mono
       nerd-fonts.jetbrains-mono
       noto-fonts
@@ -97,15 +116,15 @@
     fontconfig = {
       defaultFonts = {
         monospace = [
-          "AtknsonMono NFM"
+          "Iosevka"
           "Noto Sans Mono CJK JP"
         ];
         sansSerif = [
-          "Noto Sans"
+          "Iosevka Aile"
           "Noto Sans CJK JP"
         ];
         serif = [
-          "Noto Serif"
+          "Iosevka Etoile"
           "Noto Serif CJK JP"
         ];
       };

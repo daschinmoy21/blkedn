@@ -30,8 +30,8 @@
       url = "github:/InioX/Matugen";
     }; #tool to grab color-scheme from wallpapers
 
-    nvf = {
-      url = "github:notashelf/nvf";
+    nixvim = {
+      url = "github:nix-community/nixvim";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -40,8 +40,18 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    textfox = {
+      url = "github:adriankarlen/textfox";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     antigravity-nix = {
       url = "github:jacopone/antigravity-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    microvm = {
+      url = "github:astro/microvm.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -53,9 +63,10 @@
     nixpkgs,
     home-manager,
     niri,
-    nvf,
+    nixvim,
     zen-browser,
     antigravity-nix,
+    microvm,
     #affinity-nix,
     ...
   } @ inputs: let

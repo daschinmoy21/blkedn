@@ -9,6 +9,7 @@
   home.homeDirectory = "/home/crimxnhaze";
 
   imports = [
+    inputs.textfox.homeManagerModules.default
     ./rice/rice.nix
     ./apps/apps.nix
     ./hw/hw.nix
@@ -21,6 +22,7 @@
 
   home.packages = with pkgs; [
     inputs.antigravity-nix.packages.x86_64-linux.default
+    wakatime-cli
   ];
 
   home.sessionVariables = {

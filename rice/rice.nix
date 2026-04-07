@@ -17,8 +17,8 @@
   gtk = {
     enable = true;
     font = {
-      name = "AtkynsonMono NFP";
-      package = pkgs.nerd-fonts.atkynson-mono;
+      name = "Iosevka Aile";
+      package = pkgs.iosevka;
       size = 12;
     };
 
@@ -39,6 +39,7 @@
     };
 
     gtk4 = {
+      theme = config.gtk.theme;
       extraConfig = {
         gtk-application-prefer-dark-theme = 1;
       };

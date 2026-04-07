@@ -108,7 +108,7 @@
             }
             {
               id = "Clock";
-              customFont = "AtkynsonMono NFP";
+              customFont = "Iosevka";
               formatHorizontal = "h:mm AP MM/dd";
               formatVertical = "h mm AP - MM dd";
               useCustomFont = true;
@@ -338,9 +338,9 @@
       };
 
       ui = {
-        fontDefault = "AtkynsonMono NFP";
+        fontDefault = "Iosevka";
         fontDefaultScale = 1;
-        fontFixed = "AtkynsonMono NFM";
+        fontFixed = "Iosevka";
         fontFixedScale = 1;
         panelsOverlayLayer = true;
         tooltipsEnabled = true;

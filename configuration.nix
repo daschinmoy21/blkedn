@@ -39,6 +39,7 @@
 
   # enable flakes
   nix.settings.experimental-features = ["nix-command" "flakes"];
+  nix.settings.download-buffer-size = 16 * 1024 * 1024;
 
   # Enable Home Manager
   home-manager = {
