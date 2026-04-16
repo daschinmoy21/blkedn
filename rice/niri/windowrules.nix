@@ -7,12 +7,6 @@
         default-column-width = {};
       }
 
-      # Open the Firefox picture-in-picture player as floating by default
-      {
-        matches = [{ app-id = "firefox$"; title = "^Picture-in-Picture$"; }];
-        open-floating = true;
-      }
-
       # Global window styling
       {
         geometry-corner-radius = {

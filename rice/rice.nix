@@ -6,7 +6,6 @@
   ...
 }: {
   imports = [
-    ./noctalia.nix
     ./niri.nix
     ./nvf.nix
     ./evil-helix.nix

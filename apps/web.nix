@@ -6,7 +6,6 @@
 }: {
   home.packages = with pkgs; [
     inputs.zen-browser.packages.${pkgs.system}.default
-    firefox
     vesktop
   ];
 }

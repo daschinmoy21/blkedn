@@ -35,8 +35,6 @@
         };
       };
 
-
-
       diagnostics = {
         enable = true;
         config = {
@@ -287,7 +285,6 @@
           enable = true;
           lsp.enable = true;
         };
-
       };
 
       visuals = {
@@ -361,25 +358,24 @@
         enable = true;
         name = "base16";
         base16-colors = {
-            base00 = "#282828"; # Background
-            base01 = "#3c3836"; # Lighter Background
-            base02 = "#504945"; # Selection Background
-            base03 = "#665c54"; # Comments
-            base04 = "#bdae93"; # Dark Foreground
-            base05 = "#ebdbb2"; # Foreground
-            base06 = "#d5c4a1"; # Light Foreground
-            base07 = "#fbf1c7"; # Light Background
-            base08 = "#fb4934"; # Red
-            base09 = "#fe8019"; # Orange
-            base0A = "#fabd2f"; # Yellow
-            base0B = "#b8bb26"; # Green
-            base0C = "#8ec07c"; # Aqua
-            base0D = "#83a598"; # Blue
-            base0E = "#d3869b"; # Purple
-            base0F = "#d65d0e"; # Brown
+          base00 = "#282828"; # Background
+          base01 = "#3c3836"; # Lighter Background
+          base02 = "#504945"; # Selection Background
+          base03 = "#665c54"; # Comments
+          base04 = "#bdae93"; # Dark Foreground
+          base05 = "#ebdbb2"; # Foreground
+          base06 = "#d5c4a1"; # Light Foreground
+          base07 = "#fbf1c7"; # Light Background
+          base08 = "#fb4934"; # Red
+          base09 = "#fe8019"; # Orange
+          base0A = "#fabd2f"; # Yellow
+          base0B = "#b8bb26"; # Green
+          base0C = "#8ec07c"; # Aqua
+          base0D = "#83a598"; # Blue
+          base0E = "#d3869b"; # Purple
+          base0F = "#d65d0e"; # Brown
         };
       };
-
 
       binds = {
         whichKey = {

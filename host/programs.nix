@@ -33,10 +33,11 @@ in {
     discord
     uv
     gemini-cli
-    winboat
+    # winboat
     virtiofsd
 
-    google-cloud-sdk
+    zed-editor
+
     btop
     heroic
     yazi
@@ -64,7 +65,6 @@ in {
     amdctl #CPU config tool
 
     # display shenangians
-    inputs.noctalia.packages.${system}.default #Noctalia input
     xdg-utils
     xdg-desktop-portal-gtk
     xdg-desktop-portal-xapp
@@ -118,6 +118,7 @@ in {
     dracula-icon-theme
     kdePackages.fcitx5-configtool # IME Config tool
     # inputs.matugen.packages.x86_64-linux.default #matugen input
+    inputs.awww.packages.${pkgs.stdenv.hostPlatform.system}.awww
 
     #greeter theme
     tuigreet
@@ -129,6 +130,7 @@ in {
     cacert
 
     networkmanagerapplet
+    power-profiles-daemon
   ];
 
   # Enable programs defined by Home Manager modules.
@@ -151,7 +153,20 @@ in {
     # honkers-railway-launcher.enable = true;
 
     virt-manager.enable = true;
-    firefox.enable = true;
+    dms-shell = {
+      enable = true;
+      systemd = {
+        enable = true;
+        restartIfChanged = true;
+      };
+      enableSystemMonitoring = true;
+      enableVPN = true;
+      enableDynamicTheming = true;
+      enableAudioWavelength = true;
+      enableCalendarEvents = true;
+      enableClipboardPaste = true;
+      quickshell.package = inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.quickshell;
+    };
 
     dconf.enable = true;
     xfconf.enable = true; #allow Thunar configs
@@ -163,11 +178,10 @@ in {
       ];
     };
 
-    # enable Niri Window Manager - NixOS source in flake, builds using cachix
+    # Use the nixpkgs-packaged Niri instead of the flake-provided variants.
     niri.enable = true;
-    niri.package = pkgs.niri-stable;
+    niri.package = pkgs.niri;
   };
-  # niri-flake.cache.enable = false; #uncomment once cache is built
 
   # cachix sources
 

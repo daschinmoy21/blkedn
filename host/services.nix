@@ -7,18 +7,21 @@
 }: {
   # Enable networking
   networking.networkmanager.enable = true;
+  #required for cloudflare-warp to work
+  networking.firewall.checkReversePath = "loose";
   # Enables wireless support via wpa_supplicant.
   # networking.wireless.enable = true;
+  systemd.services.NetworkManager-wait-online.enable = false;
 
   # Enable System Bluetooth
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
   };
-  
+
   zramSwap.enable = true;
 
-  #cloudflare warp 
+  #cloudflare warp
   services.cloudflare-warp.enable = true;
 
   # Audio services - Pipewire by default

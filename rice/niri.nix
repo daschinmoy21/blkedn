@@ -5,9 +5,6 @@
   ...
 }: {
   imports = [
-    # import the noctalia manager module
-    ./noctalia.nix
-
     # import settings broken out into other files
     ./niri/startup.nix
     ./niri/keybinds.nix

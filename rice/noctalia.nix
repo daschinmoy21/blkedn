@@ -353,10 +353,10 @@
       };
 
       wallpaper = {
-        defaultWallpaper = "/home/jlc/Pictures/wallpapers/tokyo_night-02.png";
+        defaultWallpaper = "/home/crimxnhaze/walls/ascii1.jpg";
         directory = "/home/crimxnhaze/walls";
         enableMultiMonitorDirectories = false;
-        enabled = true;
+        enabled = false;
         fillColor = "#000000";
         fillMode = "crop";
         monitors = [

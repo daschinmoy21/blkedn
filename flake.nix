@@ -20,15 +20,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    noctalia = {
-      url = "github:noctalia-dev/noctalia-shell";
-      inputs.nixpkgs.follows = "nixpkgs";
-      # inputs.quickshell.follows = "quickshell"; # Use same quickshell version
-    };
-
     matugen = {
       url = "github:/InioX/Matugen";
     }; #tool to grab color-scheme from wallpapers
+
+    awww.url = "git+https://codeberg.org/LGFae/awww";
 
     nvf = {
       url = "github:notashelf/nvf";
@@ -77,11 +73,7 @@
           ./configuration.nix
 
           inputs.home-manager.nixosModules.home-manager
-          inputs.noctalia.nixosModules.default
           inputs.niri.nixosModules.niri
-          {
-            nixpkgs.overlays = [niri.overlays.niri];
-          }
           {
             #environment.systemPackages = [affinity-nix.packages.x86_64-linux.v3];
           }

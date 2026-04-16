@@ -13,19 +13,21 @@
   };
 
   fileSystems."/home/crimxnhaze/SSD2" = {
-    device = "/dev/disk/by-uuid/23B0AE5D0C7C1589";
+    device = "/dev/disk/by-uuid/0F27AA6C443BF732";
     fsType = "ntfs";
     options = ["nofail" "uid=1000" "gid=100"];
   };
 
   fileSystems."/home/crimxnhaze/SSD3" = {
-    device = "/dev/disk/by-uuid/84F25C85F25C7CFC";
+    device = "/dev/disk/by-uuid/5AECAF24ECAEF981";
     fsType = "ntfs";
     options = ["nofail" "uid=1000" "gid=100"];
   };
 
   systemd.tmpfiles.rules = [
     "d /home/crimxnhaze/SSD1 0755 crimxnhaze users"
+    "d /home/crimxnhaze/SSD2 0755 crimxnhaze users"
+    "d /home/crimxnhaze/SSD3 0755 crimxnhaze users"
   ];
 
   swapDevices = [ {

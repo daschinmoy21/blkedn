@@ -1,8 +1,4 @@
-{
-  pkgs,
-  lib,
-  ...
-}: {
+{pkgs, ...}: {
   home.packages = with pkgs; [
     ghostty
   ];
@@ -11,7 +7,7 @@
     enable = true;
     enableFishIntegration = true;
     settings = {
-      theme = "Batman";
+      theme = "Matte Black";
       command = "${pkgs.fish}/bin/fish";
     };
   };

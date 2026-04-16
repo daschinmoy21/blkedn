@@ -5,14 +5,6 @@
   inputs,
   ...
 }: let
-  noctalia = cmd:
-    [
-      "noctalia-shell"
-      "ipc"
-      "call"
-    ]
-    ++ (pkgs.lib.splitString " " cmd);
-    
   # Helper to make spawn actions cleaner  
   spawn = cmd: if builtins.isList cmd then cmd else [ cmd ];
 in {
@@ -25,12 +17,10 @@ in {
     # === Application Launchers ===
     "Mod+T".action.spawn = spawn "${pkgs.ghostty}/bin/ghostty"; # Changed to match existing terminal choice often used, or use config.terminal if available, but staying safe with what was there
     "Mod+Return".action.spawn = spawn "${pkgs.ghostty}/bin/ghostty";
-     "Mod+Space".action.spawn = noctalia "launcher toggle"; # Using noctalia as main launcher as per black-don-os reference
-    #"Mod+Space".action.spawn = spawn "fuzzel";
-
-    "Mod+Comma".action.spawn = noctalia "settings toggle";
-    "Mod+Alt+S".action.spawn = noctalia "settings toggle";
-    "Mod+Shift+C".action.spawn = noctalia "controlCenter toggle";
+    "Mod+Space".action.spawn = spawn ["dms" "ipc" "call" "spotlight" "toggle"];
+    "Mod+Comma".action.spawn = spawn ["dms" "ipc" "call" "settings" "toggle"];
+    "Mod+Alt+S".action.spawn = spawn ["dms" "ipc" "call" "settings" "toggle"];
+    "Mod+Shift+C".action.spawn = spawn ["dms" "ipc" "call" "controlCenter" "toggle"];
 
     # === Audio Controls (Wpctl) ===
     "XF86AudioRaiseVolume".action.spawn = spawn ["wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "5%+"];
@@ -187,7 +177,7 @@ in {
     "Mod+G".action.spawn = spawn "telegram-desktop"; 
     # "Mod+Shift+Ctrl+C".action.spawn = spawn ["ghostty" "claude"];
     "Ctrl+Mod+N".action.spawn = spawn "obsidian";
-    "Mod+B".action.spawn = spawn "firefox"; # Default to firefox if browser var not clear
+    "Mod+B".action.spawn = spawn "zen";
     "Mod+D".action.spawn = spawn "vesktop";
     "Mod+S".action.spawn = spawn "steam";
     "Mod+Shift+O".action.spawn = spawn "obs";
