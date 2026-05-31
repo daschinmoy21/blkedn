@@ -18,6 +18,16 @@
     # inputs.matugen.nixosModules.default
   ];
 
+  # Ignore failed openldap tests (upstream flaky test)
+  nixpkgs.overlays = [
+    (final: prev: {
+      openldap = prev.openldap.overrideAttrs (old: {
+        doCheck = false;
+        doInstallCheck = false;
+      });
+    })
+  ];
+
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;

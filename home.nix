@@ -14,7 +14,7 @@
     ./hw/hw.nix
   ];
 
-  home.stateVersion = "25.05"; # Don't Change This.
+  home.stateVersion = "26.05";
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;

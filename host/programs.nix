@@ -30,13 +30,18 @@ in {
     nix-output-monitor
     nvd
     opencode
+
+    inputs.helium.packages.${system}.default
     discord
+    legcord
     uv
     gemini-cli
-    # winboat
+    winboat
     virtiofsd
-
+    stremio-linux-shell
     zed-editor
+    cursor-cli
+    feishin
 
     btop
     heroic
@@ -93,7 +98,7 @@ in {
 
     # productivity
     xournalpp #Notetaking
-    libreoffice-fresh # Office Suite
+    onlyoffice-desktopeditors # Office Suite
 
     hoard #CLI Command Organizer
     gtt #google translate tui
@@ -172,9 +177,9 @@ in {
     xfconf.enable = true; #allow Thunar configs
     thunar = {
       enable = true;
-      plugins = with pkgs.xfce; [
-        thunar-volman
-        thunar-archive-plugin
+      plugins = [
+        pkgs.thunar-volman
+        pkgs.thunar-archive-plugin
       ];
     };
 

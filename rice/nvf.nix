@@ -252,7 +252,7 @@
         markdown = {
           enable = true;
         };
-        ts = {
+        typescript = {
           enable = true;
           lsp = {
             enable = true;
@@ -431,7 +431,7 @@
           enable = false;
         };
         vim-wakatime = {
-          enable = false;
+          enable = true;
         };
         icon-picker = {
           enable = true;

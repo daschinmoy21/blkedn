@@ -30,6 +30,10 @@
       url = "github:notashelf/nvf";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    helium = {
+      url = "github:schembriaiden/helium-browser-nix-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     zen-browser = {
       url = "github:0xc000022070/zen-browser-flake";
@@ -40,6 +44,11 @@
       url = "github:jacopone/antigravity-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # microvm = {
+    #   url = "github:astro/microvm.nix";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
 
     #affinity-nix.url = "github:mrshmllow/affinity-nix";
   };
@@ -74,6 +83,7 @@
 
           inputs.home-manager.nixosModules.home-manager
           inputs.niri.nixosModules.niri
+          # inputs.microvm.nixosModules.host
           {
             #environment.systemPackages = [affinity-nix.packages.x86_64-linux.v3];
           }

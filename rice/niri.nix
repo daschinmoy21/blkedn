@@ -29,6 +29,12 @@
         theme = "catppuccin-frappe-dark-cursors";
         size = 22;
       };
+      input = {
+        mouse = {
+          accel-speed = 0.0;
+          accel-profile = "flat";
+        };
+      };
     };
   };
 }
