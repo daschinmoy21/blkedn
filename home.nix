@@ -20,7 +20,9 @@
   nixpkgs.config.allowUnfree = true;
 
   home.packages = with pkgs; [
-    inputs.antigravity-nix.packages.x86_64-linux.default
+    inputs.antigravity-nix.packages.${pkgs.system}.default
+    inputs.antigravity-nix.packages.${pkgs.system}.google-antigravity-ide
+    inputs.antigravity-nix.packages.${pkgs.system}.google-antigravity-cli
   ];
 
   home.sessionVariables = {

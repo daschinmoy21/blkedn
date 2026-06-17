@@ -1,4 +1,27 @@
-{...}: {
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}: let
+  globalBlurNeedle = "    draw-border-with-background false\n    geometry-corner-radius 9.000000 9.000000 9.000000 9.000000\n    clip-to-geometry true\n    opacity 0.930000";
+  globalBlurReplacement = "    draw-border-with-background false\n    geometry-corner-radius 9.000000 9.000000 9.000000 9.000000\n    clip-to-geometry true\n    opacity 0.930000\n    background-effect { blur true; }";
+
+  opaqueAppsNeedle = "    match app-id=\"^(Helium|helium|helium-browser|dev\\\\.zed\\\\.Zed|discord)$\"\n    opacity 1.000000";
+  opaqueAppsReplacement = "    match app-id=\"^(Helium|helium|helium-browser|dev\\\\.zed\\\\.Zed|discord)$\"\n    opacity 1.000000\n    background-effect { blur false; }";
+
+  renderedConfig = config.programs.niri.finalConfig;
+  configWithBlur = builtins.replaceStrings
+    [
+      globalBlurNeedle
+      opaqueAppsNeedle
+    ]
+    [
+      globalBlurReplacement
+      opaqueAppsReplacement
+    ]
+    ("blur {\n    passes 2\n    offset 0.5\n}\n" + renderedConfig);
+in {
   programs.niri.settings = {
     window-rules = [
       # Work around WezTerm's initial configure bug
@@ -22,7 +45,7 @@
 
       # Opacity rules for specific applications
       {
-        matches = [{ app-id = "^(kitty|thunar|org\\.telegram\\.desktop|discord|vesktop|org\\.gnome\\.Nautilus|nemo)$"; }];
+        matches = [{ app-id = "^(kitty|thunar|org\\.telegram\\.desktop|vesktop|org\\.gnome\\.Nautilus|nemo)$"; }];
         opacity = 0.9;
       }
 
@@ -32,10 +55,22 @@
       #   open-on-output = "DP-3";
       # }
 
-      # Zen Browser and Zed settings
+      # Zen Browser settings
       {
-        matches = [{ app-id = "^(zen-beta|dev\\.zed\\.Zed)$"; }];
+        matches = [{ app-id = "^zen-beta$"; }];
         opacity = 0.98;
+        default-column-width = { proportion = 0.75; };
+      }
+
+      # No transparency for browsers/editors/chat that should stay fully opaque
+      {
+        matches = [{ app-id = "^(Helium|helium|helium-browser|dev\\.zed\\.Zed|discord)$"; }];
+        opacity = 1.0;
+      }
+
+      # Zed settings
+      {
+        matches = [{ app-id = "^dev\\.zed\\.Zed$"; }];
         default-column-width = { proportion = 0.75; };
       }
 
@@ -46,4 +81,19 @@
       }
     ];
   };
+
+  xdg.configFile.niri-config.source = lib.mkForce (
+    assert lib.hasInfix globalBlurNeedle renderedConfig;
+    assert lib.hasInfix opaqueAppsNeedle renderedConfig;
+    pkgs.runCommand "niri-config.kdl"
+      {
+        patchedConfig = configWithBlur;
+        passAsFile = ["patchedConfig"];
+        nativeBuildInputs = [config.programs.niri.package];
+      }
+      ''
+        cp "$patchedConfigPath" "$out"
+        niri validate -c "$out"
+      ''
+  );
 }

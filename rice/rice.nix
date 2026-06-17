@@ -16,8 +16,8 @@
   gtk = {
     enable = true;
     font = {
-      name = "AtkynsonMono NFP";
-      package = pkgs.nerd-fonts.atkynson-mono;
+      name = "Iosevka Nerd Font";
+      package = pkgs.nerd-fonts.iosevka;
       size = 12;
     };
 

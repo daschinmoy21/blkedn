@@ -9,6 +9,8 @@
   networking.networkmanager.enable = true;
   #required for cloudflare-warp to work
   networking.firewall.checkReversePath = "loose";
+  networking.firewall.allowedTCPPorts = [ 52984 ];
+  networking.firewall.allowedUDPPorts = [ 52984 ];
   # Enables wireless support via wpa_supplicant.
   # networking.wireless.enable = true;
   systemd.services.NetworkManager-wait-online.enable = false;
@@ -90,8 +92,7 @@
   # Fonts
   fonts = {
     packages = with pkgs; [
-      nerd-fonts.atkynson-mono
-      nerd-fonts.jetbrains-mono
+      nerd-fonts.iosevka
       noto-fonts
       noto-fonts-cjk-sans
       noto-fonts-cjk-serif
@@ -100,7 +101,7 @@
     fontconfig = {
       defaultFonts = {
         monospace = [
-          "AtknsonMono NFM"
+          "Iosevka Nerd Font"
           "Noto Sans Mono CJK JP"
         ];
         sansSerif = [
@@ -146,6 +147,12 @@
   };
 
   # General services
+  # Grant user access to gaming mouse peripherals
+  services.udev.extraRules = ''
+    SUBSYSTEM=="hidraw", ATTRS{idVendor}=="3554", ATTRS{idProduct}=="f503", MODE="0666"
+    SUBSYSTEM=="hidraw", ATTRS{idVendor}=="3554", ATTRS{idProduct}=="fa09", MODE="0666"
+  '';
+
   services = {
     # Video driver
     xserver.videoDrivers = ["amdgpu"];

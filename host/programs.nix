@@ -79,6 +79,7 @@ in {
     # general use and media
 
     vlc
+    qbittorrent
     nicotine-plus # soulseek client
     picard # music metadata editor
     element-desktop #matrix client

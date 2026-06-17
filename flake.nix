@@ -45,6 +45,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    nix-pi-coding-agent = {
+      url = "github:peedrr/nix-pi-coding-agent";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # microvm = {
     #   url = "github:astro/microvm.nix";
     #   inputs.nixpkgs.follows = "nixpkgs";
@@ -61,6 +66,7 @@
     nvf,
     zen-browser,
     antigravity-nix,
+    nix-pi-coding-agent,
     #affinity-nix,
     ...
   } @ inputs: let
@@ -83,6 +89,7 @@
 
           inputs.home-manager.nixosModules.home-manager
           inputs.niri.nixosModules.niri
+          nix-pi-coding-agent.nixosModules.pi
           # inputs.microvm.nixosModules.host
           {
             #environment.systemPackages = [affinity-nix.packages.x86_64-linux.v3];

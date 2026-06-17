@@ -18,6 +18,8 @@
     # inputs.matugen.nixosModules.default
   ];
 
+  wrappers.pi.enable = true;
+
   # Ignore failed openldap tests (upstream flaky test)
   nixpkgs.overlays = [
     (final: prev: {
