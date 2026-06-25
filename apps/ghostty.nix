@@ -9,6 +9,7 @@
     settings = {
       theme = "Matte Black";
       command = "${pkgs.fish}/bin/fish";
+
     };
   };
 }

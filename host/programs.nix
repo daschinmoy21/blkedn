@@ -49,6 +49,9 @@ in {
     obsidian
     element-desktop
 
+    # scripting
+    nodejs_22
+
     # git
     git
     gh
@@ -137,6 +140,16 @@ in {
 
     networkmanagerapplet
     power-profiles-daemon
+
+    # migrated from nix profile
+    blanket
+    gnome-disk-utility
+    mpv
+    ripgrep
+    socat
+    inputs.codex-cli-nix.packages.${system}.default
+    inputs.kopuz.packages.${system}.default
+    inputs.t3code-nix.packages.${system}.t3code
   ];
 
   # Enable programs defined by Home Manager modules.

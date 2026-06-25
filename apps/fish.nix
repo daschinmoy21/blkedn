@@ -2,6 +2,10 @@
   programs.fish = {
     enable = true;
 
+    shellInit = ''
+      fish_vi_key_bindings
+    '';
+
     shellAliases = {
       build = "nh os switch ~/Nix --impure";
       update = "nh os switch -u -a ~/Nix --impure";

@@ -45,6 +45,21 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    codex-cli-nix = {
+      url = "github:sadjow/codex-cli-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    kopuz = {
+      url = "github:temidaradev/kopuz";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    t3code-nix = {
+      url = "github:Sawrz/t3code-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nix-pi-coding-agent = {
       url = "github:peedrr/nix-pi-coding-agent";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -67,6 +82,9 @@
     zen-browser,
     antigravity-nix,
     nix-pi-coding-agent,
+    codex-cli-nix,
+    kopuz,
+    t3code-nix,
     #affinity-nix,
     ...
   } @ inputs: let
