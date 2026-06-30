@@ -8,8 +8,7 @@
 [![Showcase](https://img.youtube.com/vi/pEOkPy0UQNA/0.jpg)](https://youtu.be/pEOkPy0UQNA)
 </div>
 
-
-### Highlights:
+### Highlights
 
 ##### Window Manager
 
@@ -28,14 +27,14 @@
 
 ---
 
-### To-Do:
+### To-Do
 
 - [ ] Tweak niri layout & window rules further
 - [ ] Declare Vicinae Extensions
 - [ ] Go through packages and move options into ``home-manager`` wherever possible
 - [x] Locate and link AppIcons for various programs (Unneeded)
 - [x] Swap GNOME File Manager for Dolphin or a TUI Solution like Superfile (Using ``thunar``)
-- [x] Set up Japanese IME 
+- [x] Set up Japanese IME
 - [x] Configure font-swtiching for Japanese
 - [x] Declare MIME Types to prefer Affinity Suite and bespoke programs (opted to have MIME Types handled imperatively)
 - [x] Investigate Bar options outside Noctalia (Keep Noctalia as general Shell)
@@ -55,7 +54,7 @@ You won't encounter a ton of custom logic for different hosts, here - It's easy 
 
 Makes generous use of imports to break up config file lengths. Home-Manager for dotfiles is used sparingly and _mostly_ with intention.
 
-## If you wish to copy this configuration as a starting point:
+## If you wish to copy this configuration as a starting point
 
 - Create a new directory (I placed mine at `~/Nix`) and run the following command:
 
@@ -84,7 +83,7 @@ Makes generous use of imports to break up config file lengths. Home-Manager for 
 
   _`blender`, `affinity`, `xivlauncher`._
 
-## Notes:
+## Notes
 
 The initial build will take quite some time, depending on what programs you're installing.
 
@@ -92,7 +91,7 @@ The initial build will take quite some time, depending on what programs you're i
 
   > _Thereafter, write the indicated kernel module's name into the `boot.kernelModules` field in `configuration.nix` and reboot._
 
-- Use `Super+Grave` (Also known as "_Backtick_" or "_The Character Under Tilde_") to get an overview of basic keybindings.
+- Use `Super+Shift+/` (Also known as "_Super+?_") to get an overview of basic keybindings.
 
 > _The settings here deviate from the default niri bindings due simply to personal preference._
 
