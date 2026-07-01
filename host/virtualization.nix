@@ -4,16 +4,13 @@
   lib,
   ...
 }: {
-  # Enable Docker
-  virtualisation.docker = {
+  # Podman (rootless, Docker-compatible)
+  virtualisation.podman = {
     enable = true;
-    enableOnBoot = false;
-    # Convert to podman if needed, but per plan using docker
-    # rootless = {
-    #   enable = true;
-    #   setSocketVariable = true;
-    # };
+    dockerCompat = true;
   };
+
+  virtualisation.docker.enable = false;
 
   # Enable Libvirt/KVM
   virtualisation.libvirtd = {
@@ -32,7 +29,20 @@
   # Ensure default network exists and starts
   networking.firewall.trustedInterfaces = ["virbr0"];
 
+  programs.dconf.enable = true;
   programs.virt-manager.enable = true;
+
+  services.spice-vdagentd.enable = true;
+  virtualisation.spiceUSBRedirection.enable = true;
+
+  environment.systemPackages = with pkgs; [
+    virt-viewer
+    spice
+    spice-gtk
+    spice-protocol
+    virtio-win
+    win-spice
+  ];
 
   # Kernel modules for KVM and VFIO
   boot.kernelModules = ["kvm-intel" "vfio-pci"];

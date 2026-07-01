@@ -12,18 +12,28 @@
     ./rice/rice.nix
     ./apps/apps.nix
     ./hw/hw.nix
+    inputs.codex-desktop-linux.homeManagerModules.default
   ];
 
-  home.stateVersion = "26.05";
+  home.stateVersion = "25.05";
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
   home.packages = with pkgs; [
-    inputs.antigravity-nix.packages.${pkgs.system}.default
-    inputs.antigravity-nix.packages.${pkgs.system}.google-antigravity-ide
-    inputs.antigravity-nix.packages.${pkgs.system}.google-antigravity-cli
+    eog
+    inputs.antigravity-nix.packages.${pkgs.stdenv.hostPlatform.system}.default
+    inputs.antigravity-nix.packages.${pkgs.stdenv.hostPlatform.system}.google-antigravity-ide
+    inputs.antigravity-nix.packages.${pkgs.stdenv.hostPlatform.system}.google-antigravity-cli
+
+    inputs.codex-cli-nix.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
+
+  programs.codexDesktopLinux = {
+    enable = true;
+    cliPackage = inputs.codex-cli-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
+    remoteControl.enable = true;
+  };
 
   home.sessionVariables = {
     STEAM_EXTRA_COMPAT_TOOLS_PATHS = "\${HOME}/.steam/root/compatibilitytools.d";

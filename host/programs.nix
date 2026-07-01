@@ -6,13 +6,7 @@
   ...
 }: let
   blender = pkgs.blender.override {hipSupport = true;};
-  # aagl-gtk-on-nix = import (builtins.fetchTarball "https://github.com/ezKEa/aagl-gtk-on-nix/archive/release-25.11.tar.gz");
 in {
-  /*
-    imports = [
-    aagl-gtk-on-nix.module
-  ];
-  */
 
   # See what of these can be put in home-manager
   environment.systemPackages = with pkgs; [
@@ -30,13 +24,11 @@ in {
     nix-output-monitor
     nvd
     opencode
+    code-cursor-fhs
 
     inputs.helium.packages.${system}.default
     discord
-    legcord
     uv
-    gemini-cli
-    winboat
     virtiofsd
     stremio-linux-shell
     zed-editor
@@ -64,8 +56,6 @@ in {
     wget
     curl
     pciutils
-
-    #languages
 
     # hardware control
     lm_sensors #tool for scanning system fans
@@ -113,10 +103,6 @@ in {
     protonup-qt #GUI for managing Proton GE
     winetricks #etxra wine DLLs
 
-    #enable streaming media
-    # gst_all_1.gst-plugins-ugly
-    # haskellPackages.gi-gst
-
     mangohud #process overlay
     lutris
 
@@ -126,10 +112,7 @@ in {
     adwaita-icon-theme
     dracula-icon-theme
     kdePackages.fcitx5-configtool # IME Config tool
-    # inputs.matugen.packages.x86_64-linux.default #matugen input
     inputs.awww.packages.${pkgs.stdenv.hostPlatform.system}.awww
-
-    #greeter theme
     tuigreet
 
     cloudflare-warp
@@ -168,8 +151,6 @@ in {
     steam.enable = true;
     steam.gamescopeSession.enable = true;
     gamemode.enable = true;
-
-    # honkers-railway-launcher.enable = true;
 
     virt-manager.enable = true;
     dms-shell = {

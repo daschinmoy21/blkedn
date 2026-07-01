@@ -9,8 +9,6 @@
     ./niri.nix
     ./nvf.nix
     ./evil-helix.nix
-    #./matugen.nix
-    # inputs.matugen.nixosModules.default
   ];
 
   gtk = {
@@ -46,14 +44,11 @@
 
   qt = {
     enable = true;
-    platformTheme.name = "gtk";
+    platformTheme.name = "gtk3";
     style.name = "adwaita-dark";
   };
 
 
   gtk.gtk2.force = true;
   gtk.gtk4.theme = config.gtk.theme;
-  #xdg.configFile."gtk-3.0/gtk.css".source = "${config.programs.matugen.theme.files}/.config/gtk-3.0/gtk.css";
-
-  #xdg.configFile."gtk-4.0/gtk.css".source = "${config.programs.matugen.theme.files}/.config/gtk-4.0/gtk.css";
 }

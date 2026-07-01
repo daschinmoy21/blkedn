@@ -43,9 +43,6 @@
   hardware.graphics = {
     enable = true;
     enable32Bit = true;
-    extraPackages = with pkgs; [
-      rocmPackages.clr.icd
-    ];
   };
 
   # enable Qt Configuuration, including theming
@@ -137,7 +134,6 @@
     enable = true;
     clean.enable = true;
     clean.extraArgs = "--keep-since 7d --keep 5";
-    # flake = "~/Nix"; find out how tf this string needs to be written
   };
 
   # Automatic Nix Store Management - Handling Garbage collection w/ nh's functions above

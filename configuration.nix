@@ -11,11 +11,8 @@
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
     ./host/host-configuration.nix
-    ./hw/virt.nix
     ./hw/nvidia.nix
     ./host/virtualization.nix
-    inputs.home-manager.nixosModules.home-manager
-    # inputs.matugen.nixosModules.default
   ];
 
   wrappers.pi.enable = true;

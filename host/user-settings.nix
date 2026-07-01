@@ -9,7 +9,7 @@
   users.users.crimxnhaze = {
     isNormalUser = true;
     description = "crimxnhaze";
-    extraGroups = ["networkmanager" "wheel" "kvm" "libvirtd" "samba" "docker" "vboxusers"];
+    extraGroups = ["networkmanager" "wheel" "kvm" "libvirtd" "samba" "vboxusers"];
     packages = with pkgs; [
       #  kdePackages.kate #useful to have on hand tbh!
       #  thunderbird
