@@ -5,10 +5,6 @@ import Quickshell
 import Quickshell.Services.SystemTray
 import qs.configuration
 
-// Tray patterns adapted from DankMaterialShell SystemTrayBar.qml:
-// - fix icon ?path= / absolute paths
-// - left: activate (or menu if onlyMenu)
-// - right: QsMenuAnchor when hasMenu, else SNI ContextMenu dbus fallback
 Rectangle {
   id: trayRoot
   Layout.alignment: Qt.AlignVCenter
@@ -25,49 +21,6 @@ Rectangle {
 
   Behavior on border.color {
     ColorAnimation { duration: 400 }
-  }
-
-  // DMS trayIconSourceFor — many SNI icons need file:// rewriting
-  function trayIconSource(trayItem) {
-    let icon = trayItem && trayItem.icon
-    if (typeof icon !== "string" || icon === "")
-      return ""
-    if (icon.includes("?path=")) {
-      const split = icon.split("?path=")
-      if (split.length !== 2)
-        return icon
-      const name = split[0]
-      const path = split[1]
-      let fileName = name.substring(name.lastIndexOf("/") + 1)
-      if (fileName.startsWith("dropboxstatus"))
-        fileName = "hicolor/16x16/status/" + fileName
-      return "file://" + path + "/" + fileName
-    }
-    if (icon.startsWith("/") && !icon.startsWith("file://"))
-      return "file://" + icon
-    return icon
-  }
-
-  // DMS callContextMenuFallback — when hasMenu is false or QsMenu fails
-  function callContextMenuFallback(trayItemId, globalX, globalY) {
-    if (!trayItemId)
-      return
-    const script = [
-      'ITEMS=$(dbus-send --session --print-reply --dest=org.kde.StatusNotifierWatcher /StatusNotifierWatcher org.freedesktop.DBus.Properties.Get string:org.kde.StatusNotifierWatcher string:RegisteredStatusNotifierItems 2>/dev/null)',
-      'while IFS= read -r line; do',
-      '  line="${line#*\\"}"',
-      '  line="${line%\\"}"',
-      '  [ -z "$line" ] && continue',
-      '  BUS="${line%%/*}"',
-      '  OBJ="/${line#*/}"',
-      '  ID=$(dbus-send --session --print-reply --dest="$BUS" "$OBJ" org.freedesktop.DBus.Properties.Get string:org.kde.StatusNotifierItem string:Id 2>/dev/null | grep -oP \'(?<=\\")(.*?)(?=\\")\' | tail -1)',
-      '  if [ "$ID" = "$1" ]; then',
-      '    dbus-send --session --type=method_call --dest="$BUS" "$OBJ" org.kde.StatusNotifierItem.ContextMenu int32:"$2" int32:"$3"',
-      '    exit 0',
-      '  fi',
-      'done <<< "$ITEMS"'
-    ].join("\n")
-    Quickshell.execDetached(["bash", "-c", script, "_", String(trayItemId), String(globalX), String(globalY)])
   }
 
   RowLayout {
@@ -88,87 +41,78 @@ Rectangle {
         implicitHeight: 22
 
         Image {
-          id: iconImg
           anchors.centerIn: parent
           width: 16
           height: 16
-          source: trayRoot.trayIconSource(trayItem.modelData)
+          source: {
+            const icon = trayItem.modelData.icon || ""
+            if (icon.startsWith("/") && !icon.startsWith("file:"))
+              return "file://" + icon
+            return icon
+          }
           sourceSize.width: 16
           sourceSize.height: 16
-          asynchronous: true
           smooth: true
-          mipmap: true
-          visible: status === Image.Ready
         }
 
-        // Letter fallback if icon fails
-        Text {
-          anchors.centerIn: parent
-          visible: !iconImg.visible
-          text: {
-            const id = trayItem.modelData?.id || "?"
-            return id.charAt(0).toUpperCase()
-          }
-          color: "#A9A9A9"
-          font.pixelSize: 10
-          font.family: "Iosevka Nerd Font"
-        }
+        ToolTip.visible: ma.containsMouse && !!(trayItem.modelData.tooltipTitle || trayItem.modelData.title)
+        ToolTip.delay: 400
+        ToolTip.text: trayItem.modelData.tooltipTitle || trayItem.modelData.title || ""
 
+        // Platform menu via Quickshell's menu anchor (DBusMenu path)
         QsMenuAnchor {
           id: menuAnchor
-          menu: trayItem.modelData.menu
-          // Anchor to this item (DMS/docs: menu won't show without valid anchor)
-          anchor.item: trayItem
-          anchor.edges: Edges.Bottom | Edges.Left
-          anchor.gravity: Edges.Bottom | Edges.Right
-          anchor.margins.top: 6
+          menu: trayItem.modelData.hasMenu ? trayItem.modelData.menu : null
+          anchor {
+            item: trayItem
+            edges: Edges.Bottom | Edges.Left
+            gravity: Edges.Bottom | Edges.Right
+            margins.top: 6
+          }
         }
 
-        function openDbusMenu() {
-          if (!trayItem.modelData.hasMenu || !trayItem.modelData.menu) {
+        function openDbusMenu(mouseX, mouseY) {
+          if (!trayItem.modelData.hasMenu)
             return false
-          }
-          try {
-            menuAnchor.menu = trayItem.modelData.menu
-            menuAnchor.anchor.item = trayItem
-            menuAnchor.anchor.updateAnchor()
-            menuAnchor.open()
-            return true
-          } catch (e) {
-            return false
-          }
-        }
 
-        function openContextMenu(mouse) {
-          // 1) Prefer QsMenuAnchor when DBusMenu is exposed
-          if (openDbusMenu())
-            return
-
-          // 2) secondaryActivate (caelestia / many clients)
-          try {
-            trayItem.modelData.secondaryActivate()
-          } catch (e) {
+          // 1) Preferred: QsMenuAnchor (works for most SNI DBus menus)
+          if (trayItem.modelData.menu) {
+            try {
+              menuAnchor.menu = trayItem.modelData.menu
+              menuAnchor.anchor.updateAnchor()
+              menuAnchor.open()
+              return true
+            } catch (e) {
+              // fall through
+            }
           }
 
-          // 3) DMS dbus ContextMenu fallback with global screen coords
-          const gp = ma.mapToGlobal(mouse.x, mouse.y)
-          trayRoot.callContextMenuFallback(
-            trayItem.modelData.id,
-            Math.round(gp.x),
-            Math.round(gp.y)
-          )
-        }
-
-        function activateLeft() {
-          if (!trayItem.modelData)
-            return
-          // DMS: onlyMenu → open menu; else activate
-          if (trayItem.modelData.onlyMenu) {
-            if (trayItem.modelData.hasMenu)
-              openDbusMenu()
-            return
+          // 2) SNI Display() with window-relative coordinates
+          const win = trayItem.QsWindow ? trayItem.QsWindow.window : null
+          if (win) {
+            try {
+              // Map click (or icon bottom) into the window content item
+              const content = win.contentItem
+              let rx = mouseX
+              let ry = mouseY
+              if (content) {
+                const p = ma.mapToItem(content, mouseX, mouseY)
+                rx = p.x
+                ry = p.y
+              } else {
+                // Fallback: map item origin into global-ish window space via mapToItem(null)
+                const p = trayItem.mapToItem(null, 0, trayItem.height)
+                rx = p.x
+                ry = p.y
+              }
+              trayItem.modelData.display(win, Math.round(rx), Math.round(ry))
+              return true
+            } catch (e2) {
+              // fall through
+            }
           }
-          trayItem.modelData.activate()
+
+          return false
         }
 
         MouseArea {
@@ -180,23 +124,36 @@ Rectangle {
           preventStealing: true
 
           onClicked: mouse => {
+            // Middle: secondary activate (spec)
+            if (mouse.button === Qt.MiddleButton) {
+              trayItem.modelData.secondaryActivate()
+              return
+            }
+
+            // Left: activate, unless onlyMenu → open menu
             if (mouse.button === Qt.LeftButton) {
-              trayItem.activateLeft()
-            } else if (mouse.button === Qt.RightButton) {
-              trayItem.openContextMenu(mouse)
-            } else if (mouse.button === Qt.MiddleButton) {
-              try {
+              if (trayItem.modelData.onlyMenu && trayItem.modelData.hasMenu) {
+                if (!trayItem.openDbusMenu(mouse.x, mouse.y))
+                  trayItem.modelData.secondaryActivate()
+              } else {
+                trayItem.modelData.activate()
+              }
+              return
+            }
+
+            // Right: open DBus menu when available
+            if (mouse.button === Qt.RightButton) {
+              if (trayItem.modelData.hasMenu) {
+                if (!trayItem.openDbusMenu(mouse.x, mouse.y))
+                  trayItem.modelData.secondaryActivate()
+              } else {
                 trayItem.modelData.secondaryActivate()
-              } catch (e) {
               }
             }
           }
 
           onWheel: wheel => {
-            try {
-              trayItem.modelData.scroll(wheel.angleDelta.y, false)
-            } catch (e) {
-            }
+            trayItem.modelData.scroll(wheel.angleDelta.y, false)
           }
         }
       }

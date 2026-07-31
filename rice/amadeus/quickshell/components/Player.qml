@@ -1,13 +1,10 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Io
 import Quickshell.Services.Mpris
 import qs.configuration
 
-// Media widget inspired by DankMaterialShell MprisController + TrackArtService:
-// - Quickshell Mpris (not playerctl)
-// - blacklist Helium / Chromium so browser tabs don't own the widget
-// - trackArtUrl / metadata mpris:artUrl / YouTube thumbnail fallback
 Rectangle {
   id: playerModule
   Layout.alignment: Qt.AlignVCenter
@@ -27,147 +24,158 @@ Rectangle {
     ColorAnimation { duration: 200 }
   }
 
-  // Substrings matched against identity + desktopEntry (case-insensitive)
-  readonly property var excludePlayers: [
-    "helium",
-    "chromium",
-    "chrome",
-    "google-chrome",
-    "brave",
-    "vivaldi",
-    "msedge",
-    "edge",
-    "opera"
-  ]
+  // Ignore browser MPRIS (Helium/Chromium/Chrome) so tabs don't hijack the widget
+  readonly property var ignoreTokens: ["helium", "chromium", "chrome"]
 
-  readonly property var availablePlayers: {
-    const players = Mpris.players.values
-    if (!players || players.length === 0)
-      return []
-    return players.filter(p => !isExcluded(p))
-  }
+  property var activePlayer: null
+  property string artUrl: ""
+  property bool playing: false
+  property string fallbackIcon: Quickshell.shellPath("svg/headphones.svg")
 
-  // Prefer Playing, else first non-idle
-  readonly property var activePlayer: {
-    const list = availablePlayers
-    if (!list || list.length === 0)
-      return null
-    const playing = list.find(p => p.isPlaying)
-    if (playing)
-      return playing
-    // Prefer paused with a title over empty stopped chromium leftovers
-    const withTitle = list.find(p => p.trackTitle && p.trackTitle.length > 0)
-    return withTitle || list[0]
-  }
+  readonly property bool hasArt: artUrl !== "" && albumArt.status === Image.Ready
 
-  readonly property bool hasPlayer: activePlayer !== null
-  readonly property bool playing: !!(activePlayer && activePlayer.isPlaying)
-
-  function isExcluded(p) {
+  function playerIgnored(p) {
     if (!p)
       return true
-    const identity = (p.identity || "").toLowerCase()
-    const desktop = (("desktopEntry" in p && p.desktopEntry) ? String(p.desktopEntry) : "").toLowerCase()
-    const dbus = (("dbusName" in p && p.dbusName) ? String(p.dbusName) : "").toLowerCase()
-    const blob = identity + " " + desktop + " " + dbus
-    return excludePlayers.some(ex => blob.includes(ex))
+    const hay = [p.identity || "", p.desktopEntry || "", p.dbusName || ""].join(" ").toLowerCase()
+    for (let i = 0; i < ignoreTokens.length; i++) {
+      if (hay.indexOf(ignoreTokens[i]) !== -1)
+        return true
+    }
+    return false
   }
 
-  // DMS TrackArtService.getArtworkUrl simplified
-  function getArtUrl(player) {
-    if (!player)
+  function normalizeArt(url) {
+    const a = (url || "").trim()
+    if (a === "")
       return ""
+    if (a.startsWith("/") && !a.startsWith("file:"))
+      return "file://" + a
+    return a
+  }
 
-    if (player.trackArtUrl)
-      return normalizeUrl(player.trackArtUrl)
+  function pickPlayer() {
+    const list = Mpris.players.values
+    let playingP = null
+    let pausedP = null
+    let otherP = null
 
-    if (player.metadata && player.metadata["mpris:artUrl"]) {
-      const u = player.metadata["mpris:artUrl"].toString()
-      if (u)
-        return normalizeUrl(u)
-    }
-
-    // YouTube: no artUrl — derive thumbnail from watch URL
-    if (player.metadata && player.metadata["xesam:url"]) {
-      const url = player.metadata["xesam:url"].toString()
-      if (url.includes("youtube.com") || url.includes("youtu.be")) {
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
-        const match = url.match(regExp)
-        if (match && match[2] && match[2].length === 11)
-          return "https://img.youtube.com/vi/" + match[2] + "/hqdefault.jpg"
+    for (let i = 0; i < list.length; i++) {
+      const p = list[i]
+      if (playerIgnored(p))
+        continue
+      if (p.isPlaying || p.playbackState === MprisPlaybackState.Playing) {
+        playingP = p
+        break
       }
+      if (!pausedP && p.playbackState === MprisPlaybackState.Paused)
+        pausedP = p
+      else if (!otherP)
+        otherP = p
     }
 
-    return ""
+    const next = playingP || pausedP || otherP || null
+    if (next !== activePlayer)
+      activePlayer = next
+
+    playing = !!(activePlayer && (activePlayer.isPlaying || activePlayer.playbackState === MprisPlaybackState.Playing || activePlayer.playbackState === MprisPlaybackState.Paused))
+    updateArt()
   }
 
-  function normalizeUrl(u) {
-    if (!u)
-      return ""
-    const s = String(u)
-    if (s.startsWith("/") && !s.startsWith("file:"))
-      return "file://" + s
-    return s
+  function updateArt() {
+    const p = activePlayer
+    if (!p) {
+      artUrl = ""
+      artFallback.running = false
+      return
+    }
+
+    const mprisArt = normalizeArt(p.trackArtUrl || "")
+    if (mprisArt !== "") {
+      artUrl = mprisArt
+      return
+    }
+
+    // Optional fallback when MPRIS art is empty
+    artFallback.running = true
   }
 
-  property string artUrl: ""
-  property string lastValidArtUrl: ""
-
-  // Keep art reactive to active player + track changes
-  function refreshArt() {
-    const u = getArtUrl(activePlayer)
-    artUrl = u
-    if (u)
-      lastValidArtUrl = u
+  function control(action) {
+    const p = activePlayer
+    if (!p)
+      return
+    if (action === "previous" && p.canGoPrevious)
+      p.previous()
+    else if (action === "next" && p.canGoNext)
+      p.next()
+    else if (action === "toggle" && p.canTogglePlaying)
+      p.togglePlaying()
+    Qt.callLater(pickPlayer)
   }
 
-  onActivePlayerChanged: {
-    lastValidArtUrl = ""
-    refreshArt()
+  Component.onCompleted: pickPlayer()
+
+  // Re-pick when players appear/disappear
+  Connections {
+    target: Mpris.players
+    function onObjectInsertedPost() { playerModule.pickPlayer() }
+    function onObjectRemovedPost() { playerModule.pickPlayer() }
   }
 
+  // Track art / playback state on the selected player
   Connections {
     target: playerModule.activePlayer
-    function onTrackArtUrlChanged() { playerModule.refreshArt() }
-    function onTrackTitleChanged() { playerModule.refreshArt() }
-    function onMetadataChanged() { playerModule.refreshArt() }
-    function onIsPlayingChanged() { playerModule.refreshArt() }
+    function onTrackArtUrlChanged() { playerModule.updateArt() }
+    function onMetadataChanged() { playerModule.updateArt() }
+    function onIsPlayingChanged() { playerModule.pickPlayer() }
+    function onPlaybackStateChanged() { playerModule.pickPlayer() }
+    function onPostTrackChanged() { playerModule.updateArt() }
   }
 
-  Component.onCompleted: refreshArt()
-
-  // Poll lightly — some players fill art late
+  // Cheap poll so late metadata / new players still refresh without complex wiring
   Timer {
-    interval: 1500
+    interval: 1200
     running: true
     repeat: true
-    onTriggered: playerModule.refreshArt()
+    onTriggered: playerModule.pickPlayer()
   }
 
-  readonly property string displayArt: artUrl || lastValidArtUrl
-  readonly property bool hasArt: displayArt !== ""
+  // Fallback: playerctl, ignoring browser players
+  Process {
+    id: artFallback
+    running: false
+    command: ["playerctl", "-i", "chromium,Helium,chrome,Chrome,Chromium", "metadata", "mpris:artUrl"]
+    stdout: SplitParser {
+      onRead: art => {
+        const a = playerModule.normalizeArt(art)
+        if (a !== "" && a.indexOf("No players") === -1)
+          playerModule.artUrl = a
+        else if (!playerModule.activePlayer || !(playerModule.activePlayer.trackArtUrl))
+          playerModule.artUrl = ""
+      }
+    }
+    stderr: SplitParser {
+      onRead: err => {
+        if (err.indexOf("No player") !== -1 || err.indexOf("does not") !== -1) {
+          if (!playerModule.activePlayer || !(playerModule.activePlayer.trackArtUrl))
+            playerModule.artUrl = ""
+        }
+      }
+    }
+  }
 
-  // Album art
+  // Album art (preferred when available)
   Image {
     id: albumArt
     anchors.fill: parent
     anchors.margins: 1
-    visible: hasArt
-    source: displayArt
+    visible: playerModule.hasArt
+    source: playerModule.artUrl
     fillMode: Image.PreserveAspectCrop
     asynchronous: true
     cache: true
-    sourceSize.width: 64
-    sourceSize.height: 64
-    onStatusChanged: {
-      // Drop broken art so headphones show
-      if (status === Image.Error) {
-        if (playerModule.artUrl === source)
-          playerModule.artUrl = ""
-        if (playerModule.lastValidArtUrl === source)
-          playerModule.lastValidArtUrl = ""
-      }
-    }
+    sourceSize.width: 56
+    sourceSize.height: 56
   }
 
   // Headphones fallback
@@ -175,23 +183,24 @@ Rectangle {
     anchors.centerIn: parent
     width: 16
     height: 16
-    visible: !hasArt || albumArt.status !== Image.Ready
-    source: Quickshell.shellPath("svg/headphones.svg")
+    visible: !playerModule.hasArt
+    source: playerModule.fallbackIcon
     sourceSize.width: 32
     sourceSize.height: 32
-    opacity: playing ? 1.0 : 0.65
+    opacity: playerModule.playing ? 1.0 : 0.65
   }
 
+  // Subtle playing ring
   Rectangle {
     anchors.fill: parent
     radius: parent.radius
     color: "transparent"
-    border.width: playing ? 1 : 0
+    border.width: playerModule.playing && playerModule.activePlayer && playerModule.activePlayer.isPlaying ? 1 : 0
     border.color: Colors.playerBorderHover
-    visible: playing
+    visible: playerModule.playing && playerModule.activePlayer && playerModule.activePlayer.isPlaying
   }
 
-  // L prev · R next · M play/pause (on non-excluded player)
+  // Left: previous · Right: next · Middle: play/pause
   MouseArea {
     anchors.fill: parent
     acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
@@ -199,19 +208,12 @@ Rectangle {
     hoverEnabled: true
 
     onClicked: mouse => {
-      const p = playerModule.activePlayer
-      if (!p)
-        return
-      if (mouse.button === Qt.LeftButton) {
-        if (p.canGoPrevious)
-          p.previous()
-      } else if (mouse.button === Qt.RightButton) {
-        if (p.canGoNext)
-          p.next()
-      } else if (mouse.button === Qt.MiddleButton) {
-        if (p.canTogglePlaying)
-          p.togglePlaying()
-      }
+      if (mouse.button === Qt.LeftButton)
+        playerModule.control("previous")
+      else if (mouse.button === Qt.RightButton)
+        playerModule.control("next")
+      else if (mouse.button === Qt.MiddleButton)
+        playerModule.control("toggle")
     }
   }
 }
