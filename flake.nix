@@ -14,12 +14,19 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    quickshell = {
-      url = "git+https://git.outfoxxed.me/outfoxxed/quickshell";
+    noctalia.url = "github:noctalia-dev/noctalia/cachix";
+
+    qylock.url = "github:Darkkal44/qylock";
+
+    ccusage-nix = {
+      url = "github:ccusage/ccusage";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    awww.url = "git+https://codeberg.org/LGFae/awww";
+    omp-nix = {
+      url = "github:yuxqiu/omp-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     nvf = {
       url = "github:notashelf/nvf";
@@ -90,14 +97,10 @@
         ./configuration.nix
         inputs.home-manager.nixosModules.home-manager
         inputs.niri.nixosModules.niri
+        inputs.noctalia.nixosModules.default
+        inputs.qylock.nixosModules.default
         nix-pi-coding-agent.nixosModules.pi
       ];
-    };
-
-    homeConfigurations."crimxnhaze" = home-manager.lib.homeManagerConfiguration {
-      pkgs = nixpkgs.legacyPackages.${system};
-      extraSpecialArgs = {inherit inputs;};
-      modules = [./home.nix];
     };
   };
 }

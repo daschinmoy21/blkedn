@@ -8,7 +8,6 @@
     # superfile
     numbat
     bottom
-    microfetch
     lazygit
     # lazydocker
   ];

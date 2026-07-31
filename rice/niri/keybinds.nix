@@ -17,10 +17,10 @@ in {
     # === Application Launchers ===
     "Mod+T".action.spawn = spawn "${pkgs.ghostty}/bin/ghostty"; # Changed to match existing terminal choice often used, or use config.terminal if available, but staying safe with what was there
     "Mod+Return".action.spawn = spawn "${pkgs.ghostty}/bin/ghostty";
-    "Mod+Space".action.spawn = spawn ["dms" "ipc" "call" "spotlight" "toggle"];
-    "Mod+Comma".action.spawn = spawn ["dms" "ipc" "call" "settings" "toggle"];
-    "Mod+Alt+S".action.spawn = spawn ["dms" "ipc" "call" "settings" "toggle"];
-    "Mod+Shift+C".action.spawn = spawn ["dms" "ipc" "call" "controlCenter" "toggle"];
+    "Mod+Space".action.spawn = spawn ["noctalia" "msg" "panel-toggle" "launcher"];
+    "Mod+Comma".action.spawn = spawn ["noctalia" "msg" "panel-toggle" "settings"];
+    "Mod+Alt+S".action.spawn = spawn ["noctalia" "msg" "panel-toggle" "settings"];
+    "Mod+Shift+C".action.spawn = spawn ["noctalia" "msg" "panel-toggle" "control-center"];
 
     # === Audio Controls (Wpctl) ===
     "XF86AudioRaiseVolume".action.spawn = spawn ["wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "5%+"];
@@ -34,6 +34,7 @@ in {
 
     # === Security ===
     "Mod+Shift+Q".action = quit;
+    "Mod+Alt+L".action.spawn = spawn "qylock-lock";
     
     # === Keyboard Brightness ===
     "XF86KbdBrightnessUp".action.spawn = spawn ["kbdbrite.sh" "up"];

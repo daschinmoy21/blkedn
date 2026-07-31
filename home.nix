@@ -27,6 +27,17 @@
     inputs.antigravity-nix.packages.${pkgs.stdenv.hostPlatform.system}.google-antigravity-cli
 
     inputs.codex-cli-nix.packages.${pkgs.stdenv.hostPlatform.system}.default
+
+    # migrated from nix profile
+    fastfetch
+    file-roller
+    github-copilot-cli
+    witr
+    ytmdesktop
+
+    # external flake packages
+    inputs.ccusage-nix.packages.${pkgs.stdenv.hostPlatform.system}.default
+    inputs.omp-nix.packages.${pkgs.stdenv.hostPlatform.system}.oh-my-pi
   ];
 
   programs.codexDesktopLinux = {

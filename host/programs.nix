@@ -53,19 +53,15 @@ in {
     git
     gh
     git-crypt #directory and file encryption
-    gh #github cli tools
     lazydocker
 
     # package managers
-    git
     wget
     curl
     pciutils
 
     # hardware control
     lm_sensors #tool for scanning system fans
-    lact #GPU config tool
-    amdctl #CPU config tool
 
     # display shenangians
     xdg-utils
@@ -80,7 +76,6 @@ in {
     qbittorrent
     nicotine-plus # soulseek client
     picard # music metadata editor
-    element-desktop #matrix client
     ani-cli #CLI anime streaming
     youtube-tui
     tukai #terminal touch-typing practice
@@ -93,7 +88,6 @@ in {
     #olive-editor #video editor
 
     ffmpeg #video format converter
-    obsidian # Notes organization
 
     # productivity
     xournalpp #Notetaking
@@ -117,13 +111,11 @@ in {
     adwaita-icon-theme
     dracula-icon-theme
     kdePackages.fcitx5-configtool # IME Config tool
-    inputs.awww.packages.${pkgs.stdenv.hostPlatform.system}.awww
     tuigreet
 
     cloudflare-warp
     spotify
     ncspot
-    chromium
     cacert
 
     networkmanagerapplet
@@ -135,13 +127,12 @@ in {
     mpv
     ripgrep
     socat
-    inputs.codex-cli-nix.packages.${system}.default
     inputs.t3code-nix.packages.${system}.t3code
   ];
 
   # Enable programs defined by Home Manager modules.
 
-  programs = {
+    programs = {
     fish.enable = true;
     direnv = {
       enable = true;
@@ -157,20 +148,6 @@ in {
     gamemode.enable = true;
 
     virt-manager.enable = true;
-    dms-shell = {
-      enable = true;
-      systemd = {
-        enable = true;
-        restartIfChanged = true;
-      };
-      enableSystemMonitoring = true;
-      enableVPN = true;
-      enableDynamicTheming = true;
-      enableAudioWavelength = true;
-      enableCalendarEvents = false;
-      enableClipboardPaste = true;
-      quickshell.package = inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.quickshell;
-    };
 
     dconf.enable = true;
     xfconf.enable = true; #allow Thunar configs
@@ -192,11 +169,13 @@ in {
   nix.settings = {
     substituters = [
       "https://ezkea.cachix.org"
+      "https://noctalia.cachix.org"
       #"https://cache.garnix.io"
     ];
 
     trusted-public-keys = [
       "ezkea.cachix.org-1:ioBmUbJTZIKsHmWWXPe1FSFbeVe+afhfgqgTSNd34eI="
+      "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
       #"cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
     ];
   };

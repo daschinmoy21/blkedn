@@ -73,6 +73,8 @@
   #   enableSSHSupport = true;
   # };
 
+  users.users.crimxnhaze.shell = pkgs.fish;
+
   # Enable the OpenSSH daemon (for Hadoop localhost SSH).
   services.openssh = {
     enable = true;

@@ -7,21 +7,9 @@
   home.packages = with pkgs; [
   ];
 
+  # Neovim is managed by nvf (rice/nvf.nix) — plain nvim here would conflict
   programs.neovim = {
-    enable = true;
-    withPython3 = true;
-    withRuby = false;
-    viAlias = true;
-    vimAlias = true;
-    plugins = with pkgs.vimPlugins; [
-      statix
-      LazyVim
-      nvim-treesitter
-      blink-cmp
-      blink-cmp-spell
-      blink-cmp-git
-      monokai-pro-nvim
-    ];
+    enable = false;
   };
 
   programs.vscodium = {
