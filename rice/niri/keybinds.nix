@@ -5,8 +5,11 @@
   inputs,
   ...
 }: let
-  # Helper to make spawn actions cleaner  
-  spawn = cmd: if builtins.isList cmd then cmd else [ cmd ];
+  # Helper to make spawn actions cleaner
+  spawn = cmd:
+    if builtins.isList cmd
+    then cmd
+    else [cmd];
 in {
   programs.niri.settings.binds = with config.lib.niri.actions; {
     # === System & Overview ===
@@ -17,10 +20,10 @@ in {
     # === Application Launchers ===
     "Mod+T".action.spawn = spawn "${pkgs.ghostty}/bin/ghostty"; # Changed to match existing terminal choice often used, or use config.terminal if available, but staying safe with what was there
     "Mod+Return".action.spawn = spawn "${pkgs.ghostty}/bin/ghostty";
-    "Mod+Space".action.spawn = spawn ["dms" "ipc" "call" "spotlight" "toggle"];
-    "Mod+Comma".action.spawn = spawn ["dms" "ipc" "call" "settings" "toggle"];
-    "Mod+Alt+S".action.spawn = spawn ["dms" "ipc" "call" "settings" "toggle"];
-    "Mod+Shift+C".action.spawn = spawn ["dms" "ipc" "call" "controlCenter" "toggle"];
+    "Mod+Space".action.spawn = spawn ["${pkgs.rofi}/bin/rofi" "-show" "drun"];
+    "Mod+Comma".action.spawn = spawn ["${pkgs.rofi}/bin/rofi" "-show" "drun"];
+    "Mod+Alt+S".action.spawn = spawn ["${pkgs.rofi}/bin/rofi" "-show" "drun"];
+    "Mod+Shift+C".action.spawn = spawn ["${pkgs.rofi}/bin/rofi" "-show" "drun"];
 
     # === Audio Controls (Wpctl) ===
     "XF86AudioRaiseVolume".action.spawn = spawn ["wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "5%+"];
@@ -34,7 +37,7 @@ in {
 
     # === Security ===
     "Mod+Shift+Q".action = quit;
-    
+
     # === Keyboard Brightness ===
     "XF86KbdBrightnessUp".action.spawn = spawn ["kbdbrite.sh" "up"];
     "XF86KbdBrightnessDown".action.spawn = spawn ["kbdbrite.sh" "down"];
@@ -114,37 +117,37 @@ in {
     "Mod+Ctrl+WheelScrollDown".cooldown-ms = 150;
     "Mod+Ctrl+WheelScrollUp".action = move-column-to-workspace-up;
     "Mod+Ctrl+WheelScrollUp".cooldown-ms = 150;
-    
+
     "Mod+WheelScrollRight".action = focus-column-right;
     "Mod+WheelScrollLeft".action = focus-column-left;
     "Mod+Ctrl+WheelScrollRight".action = move-column-right;
     "Mod+Ctrl+WheelScrollLeft".action = move-column-left;
-    
+
     "Mod+Shift+WheelScrollDown".action = focus-column-right;
     "Mod+Shift+WheelScrollUp".action = focus-column-left;
     "Mod+Ctrl+Shift+WheelScrollDown".action = move-column-right;
     "Mod+Ctrl+Shift+WheelScrollUp".action = move-column-left;
 
     # === Numbered Workspaces ===
-    "Mod+1".action = { focus-workspace = 1; };
-    "Mod+2".action = { focus-workspace = 2; };
-    "Mod+3".action = { focus-workspace = 3; };
-    "Mod+4".action = { focus-workspace = 4; };
-    "Mod+5".action = { focus-workspace = 5; };
-    "Mod+6".action = { focus-workspace = 6; };
-    "Mod+7".action = { focus-workspace = 7; };
-    "Mod+8".action = { focus-workspace = 8; };
-    "Mod+9".action = { focus-workspace = 9; };
+    "Mod+1".action = {focus-workspace = 1;};
+    "Mod+2".action = {focus-workspace = 2;};
+    "Mod+3".action = {focus-workspace = 3;};
+    "Mod+4".action = {focus-workspace = 4;};
+    "Mod+5".action = {focus-workspace = 5;};
+    "Mod+6".action = {focus-workspace = 6;};
+    "Mod+7".action = {focus-workspace = 7;};
+    "Mod+8".action = {focus-workspace = 8;};
+    "Mod+9".action = {focus-workspace = 9;};
 
-    "Mod+Ctrl+1".action = { move-column-to-workspace = 1; };
-    "Mod+Ctrl+2".action = { move-column-to-workspace = 2; };
-    "Mod+Ctrl+3".action = { move-column-to-workspace = 3; };
-    "Mod+Ctrl+4".action = { move-column-to-workspace = 4; };
-    "Mod+Ctrl+5".action = { move-column-to-workspace = 5; };
-    "Mod+Ctrl+6".action = { move-column-to-workspace = 6; };
-    "Mod+Ctrl+7".action = { move-column-to-workspace = 7; };
-    "Mod+Ctrl+8".action = { move-column-to-workspace = 8; };
-    "Mod+Ctrl+9".action = { move-column-to-workspace = 9; };
+    "Mod+Ctrl+1".action = {move-column-to-workspace = 1;};
+    "Mod+Ctrl+2".action = {move-column-to-workspace = 2;};
+    "Mod+Ctrl+3".action = {move-column-to-workspace = 3;};
+    "Mod+Ctrl+4".action = {move-column-to-workspace = 4;};
+    "Mod+Ctrl+5".action = {move-column-to-workspace = 5;};
+    "Mod+Ctrl+6".action = {move-column-to-workspace = 6;};
+    "Mod+Ctrl+7".action = {move-column-to-workspace = 7;};
+    "Mod+Ctrl+8".action = {move-column-to-workspace = 8;};
+    "Mod+Ctrl+9".action = {move-column-to-workspace = 9;};
 
     # === Column Management ===
     "Mod+BracketLeft".action = consume-or-expel-window-left;
@@ -174,7 +177,7 @@ in {
     "Alt+Print".action.screenshot-window = {};
 
     # === Custom Application Launchers ===
-    "Mod+G".action.spawn = spawn "telegram-desktop"; 
+    "Mod+G".action.spawn = spawn "telegram-desktop";
     # "Mod+Shift+Ctrl+C".action.spawn = spawn ["ghostty" "claude"];
     "Ctrl+Mod+N".action.spawn = spawn "obsidian";
     "Mod+B".action.spawn = spawn "zen";
@@ -183,7 +186,7 @@ in {
     "Mod+Shift+O".action.spawn = spawn "obs";
     "Mod+F".action.spawn = spawn "thunar";
     "Ctrl+Mod+V".action.spawn = spawn "virt-manager";
-    
+
     # === Color picker ===
     # "Mod+C".action.spawn = [ "sh" "-c" "niri msg pick-color | grep 'Hex:' | cut -d' ' -f2 | wl-copy" ];
 

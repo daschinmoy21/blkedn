@@ -7,6 +7,7 @@
 }: {
   imports = [
     ./niri.nix
+    ./amadeus.nix
     ./nvf.nix
     ./evil-helix.nix
   ];
@@ -47,7 +48,6 @@
     platformTheme.name = "gtk3";
     style.name = "adwaita-dark";
   };
-
 
   gtk.gtk2.force = true;
   gtk.gtk4.theme = config.gtk.theme;

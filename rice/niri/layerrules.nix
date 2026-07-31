@@ -1,10 +1,7 @@
 {...}: {
   programs.niri.settings = {
-    layer-rules = [
-      {
-        matches = [{namespace = "^quickshell$";}];
-        place-within-backdrop = true;
-      }
-    ];
+    # Do not use place-within-backdrop for the interactive Amadeus bar —
+    # it can make the layer non-clickable.
+    layer-rules = [];
   };
 }

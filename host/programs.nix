@@ -8,7 +8,6 @@
   blender = pkgs.blender.override {hipSupport = true;};
   system = pkgs.stdenv.hostPlatform.system;
 in {
-
   # See what of these can be put in home-manager
   environment.systemPackages = with pkgs; [
     # system tools
@@ -157,21 +156,6 @@ in {
     gamemode.enable = true;
 
     virt-manager.enable = true;
-    dms-shell = {
-      enable = true;
-      systemd = {
-        enable = true;
-        restartIfChanged = true;
-      };
-      enableSystemMonitoring = true;
-      enableVPN = true;
-      enableDynamicTheming = true;
-      enableAudioWavelength = true;
-      enableCalendarEvents = false;
-      enableClipboardPaste = true;
-      quickshell.package = inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.quickshell;
-    };
-
     dconf.enable = true;
     xfconf.enable = true; #allow Thunar configs
     thunar = {
