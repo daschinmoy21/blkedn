@@ -8,6 +8,7 @@
   virtualisation.podman = {
     enable = true;
     dockerCompat = true;
+    dockerSocket.enable = true;
   };
 
   virtualisation.docker.enable = false;

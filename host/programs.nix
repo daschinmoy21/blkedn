@@ -6,11 +6,13 @@
   ...
 }: let
   blender = pkgs.blender.override {hipSupport = true;};
+  system = pkgs.stdenv.hostPlatform.system;
 in {
 
   # See what of these can be put in home-manager
   environment.systemPackages = with pkgs; [
     # system tools
+    grok-build
     bluez-headers # bluetooth enabling
     pulseaudio # provides pactl
     alejandra #nix language formatting
@@ -25,6 +27,7 @@ in {
     nvd
     opencode
     code-cursor-fhs
+    appimage-run
 
     inputs.helium.packages.${system}.default
     discord
@@ -34,6 +37,8 @@ in {
     zed-editor
     cursor-cli
     feishin
+
+    pear-desktop
 
     btop
     heroic
@@ -131,7 +136,6 @@ in {
     ripgrep
     socat
     inputs.codex-cli-nix.packages.${system}.default
-    inputs.kopuz.packages.${system}.default
     inputs.t3code-nix.packages.${system}.t3code
   ];
 
@@ -163,7 +167,7 @@ in {
       enableVPN = true;
       enableDynamicTheming = true;
       enableAudioWavelength = true;
-      enableCalendarEvents = true;
+      enableCalendarEvents = false;
       enableClipboardPaste = true;
       quickshell.package = inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.quickshell;
     };

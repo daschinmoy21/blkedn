@@ -9,8 +9,8 @@
   networking.networkmanager.enable = true;
   #required for cloudflare-warp to work
   networking.firewall.checkReversePath = "loose";
-  networking.firewall.allowedTCPPorts = [ 52984 ];
-  networking.firewall.allowedUDPPorts = [ 52984 ];
+  networking.firewall.allowedTCPPorts = [52984];
+  networking.firewall.allowedUDPPorts = [52984];
   # Enables wireless support via wpa_supplicant.
   # networking.wireless.enable = true;
   systemd.services.NetworkManager-wait-online.enable = false;
@@ -135,6 +135,8 @@
     clean.enable = true;
     clean.extraArgs = "--keep-since 7d --keep 5";
   };
+
+  programs.nix-ld.enable = true;
 
   # Automatic Nix Store Management - Handling Garbage collection w/ nh's functions above
   nix = {

@@ -21,6 +21,7 @@
       SHELL = "fish";
       EDITOR = "zededitor";
       VISUAL = "zededitor";
+      DOCKER_HOST = "unix:///run/podman/podman.sock";
     };
   };
 

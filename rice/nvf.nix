@@ -236,6 +236,8 @@
         };
         clang = {
           enable = true;
+          # ponytail: cpplint tests fail on py3.14; disable extra diagnostics
+          extraDiagnostics.enable = false;
         };
         zig = {
           enable = true;

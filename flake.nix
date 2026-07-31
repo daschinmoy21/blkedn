@@ -51,11 +51,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    kopuz = {
-      url = "github:temidaradev/kopuz";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     t3code-nix = {
       url = "github:Sawrz/t3code-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -78,7 +73,6 @@
     nix-pi-coding-agent,
     codex-cli-nix,
     codex-desktop-linux,
-    kopuz,
     t3code-nix,
     ...
   } @ inputs: let

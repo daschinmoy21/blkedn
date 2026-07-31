@@ -24,6 +24,11 @@
         doCheck = false;
         doInstallCheck = false;
       });
+      # ponytail: pandas<3.0.0 constraint in sherlock's pyproject.toml; nixpkgs ships pandas 3.0.4
+      # remove when sherlock upstream supports pandas 3.x
+      sherlock = prev.sherlock.overridePythonAttrs (old: {
+        pythonRelaxDeps = [ "pandas" ];
+      });
     })
   ];
 
@@ -68,8 +73,14 @@
   #   enableSSHSupport = true;
   # };
 
-  # Enable the OpenSSH daemon.
-  # services.openssh.enable = true;
+  # Enable the OpenSSH daemon (for Hadoop localhost SSH).
+  services.openssh = {
+    enable = true;
+    settings = {
+      PasswordAuthentication = false;
+      PermitRootLogin = "no";
+    };
+  };
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
