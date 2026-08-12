@@ -77,7 +77,6 @@ in {
     discord
     uv
     virtiofsd
-    stremio-linux-shell
     zed-editor
     cursor-cli
     feishin
