@@ -7,7 +7,6 @@
     ./tui.nix
     ./virt.nix
     ./hotspot.nix
-    ./eden.nix # official AppImage — no source build
   ];
 
   programs = {
