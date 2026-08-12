@@ -11,10 +11,10 @@
 Minimal, reinstall-reproducible NixOS flake. Key changes from `main`:
 
 - **Shell**: Noctalia v5 via binary cache (no more DMS)
-- **Lock**: qylock (Quickshell lockscreen)
+- **Lock**: qylock (Quickshell `qylock-lock`, same theme as login)
 - **WM**: niri + custom keybinds (Noctalia IPC)
 - **Editor**: nvf (Neovim); duplicate `programs.neovim` disabled
-- **Auth**: greetd + tuigreet (no SDDM)
+- **Login**: SDDM + qylock theme (Wayland)
 
 ### Reinstall from scratch
 
@@ -56,9 +56,9 @@ home.nix           — user packages
 host/
   programs.nix     — system packages, cachix
   noctalia.nix     — Noctalia NixOS module
-  qylock.nix       — qylock NixOS module (Quickshell lock)
-  services.nix     — network, audio, fonts, portals, etc.
-  greeter.nix      — greetd + tuigreet
+  qylock.nix       — qylock NixOS module (SDDM theme + Quickshell lock)
+  services.nix     — network, audio, fonts, portals, hotspot firewall, etc.
+  greeter.nix      — SDDM (greetd disabled); theme via qylock
   nvidia.nix       — NVIDIA PRIME offload
 rice/
   niri/            — niri keybinds, startup, layout, etc.
@@ -66,7 +66,48 @@ rice/
 apps/
   fish.nix         — shell aliases
   editors.nix      — VS Codium; nvim disabled (nvf handles it)
+  hotspot.nix      — Wi‑Fi hotspot CLI (home-manager package)
+tools/
+  hotspot/hotspot  — CLI source (up/down/tui/config)
 ```
+
+### Wi‑Fi hotspot CLI
+
+Windows-style mobile hotspot: share this machine’s **LAN internet** over Wi‑Fi.
+
+**Layout:** ethernet/LAN (`enp109s0`) → laptop → Wi‑Fi AP (`wlp0s20f3`) → phone.  
+Clients get a private subnet (`10.42.0.x`) with NAT via NetworkManager shared mode (same model as Windows Mobile Hotspot). Prefer **5 GHz** (`band=a`) for throughput.
+
+```bash
+# first time
+hotspot init
+hotspot config set ssid='MyLAN' password='your-long-secret'
+# or: hotspot tui
+
+hotspot up
+hotspot status
+hotspot clients
+hotspot qr      # phone QR (needs qrencode)
+hotspot down
+```
+
+| Command | What it does |
+|--------|----------------|
+| `hotspot up` / `down` | Start / stop the AP |
+| `hotspot status` | SSID, ifaces, AP IP, client count |
+| `hotspot tui` | Interactive menu (fzf) |
+| `hotspot config` | Show config (`~/.config/hotspot/config`) |
+| `hotspot config set k=v` | Set keys (`ssid`, `password`, `band`, …) |
+| `hotspot config edit` | Open config in `$EDITOR` |
+
+**Config keys** (defaults in `~/.config/hotspot/config`):
+
+- `ssid`, `password` (WPA2, 8–63 chars)
+- `wifi_iface` / `upstream_iface` (empty = auto-detect)
+- `band` — `a` (5 GHz, faster) or `bg` (2.4 GHz, longer range)
+- `channel` — `0` = auto
+
+Firewall trusts the AP iface (`wlp0s20f3`) in `host/services.nix` so DHCP/NAT is not blocked. Requires NetworkManager and a Wi‑Fi card with AP mode (Intel CNVi on this machine).
 
 ### Later
 

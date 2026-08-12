@@ -26,6 +26,11 @@
   #cloudflare warp
   services.cloudflare-warp.enable = true;
 
+  # Tailscale mesh VPN
+  services.tailscale.enable = true;
+  # tailscale0: mesh VPN; wlp0s20f3: Wi‑Fi AP (hotspot CLI, NM shared/NAT)
+  networking.firewall.trustedInterfaces = ["tailscale0" "wlp0s20f3"];
+
   # Audio services - Pipewire by default
   services.pulseaudio.enable = false; #this is mutually exclusive w/ pipewire
   security.rtkit.enable = true;
@@ -132,6 +137,8 @@
   # Nix CLI Helper tool, including flake paths for commands
   programs.nh = {
     enable = true;
+    # So bare `nh os switch` works (sets NH_FLAKE)
+    flake = "/home/crimxnhaze/blkedn";
     clean.enable = true;
     clean.extraArgs = "--keep-since 7d --keep 5";
   };

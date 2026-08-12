@@ -6,6 +6,7 @@
     ./ghostty.nix
     ./tui.nix
     ./virt.nix
+    ./hotspot.nix
   ];
 
   programs = {

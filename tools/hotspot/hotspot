@@ -1,0 +1,694 @@
+#!/usr/bin/env bash
+# hotspot — Windows-like Wi‑Fi hotspot for NixOS/NetworkManager
+# Shares the machine's LAN (or default-route) internet over Wi‑Fi AP.
+set -euo pipefail
+
+VERSION="1.0.0"
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/hotspot"
+CONFIG_FILE="${CONFIG_DIR}/config"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/hotspot"
+CONN_MARKER="${STATE_DIR}/connection-name"
+
+# Defaults (overridden by config)
+SSID="nixos-hotspot"
+PASSWORD=""
+WIFI_IFACE=""
+UPSTREAM_IFACE="" # empty = auto (default route)
+BAND="a"          # a = 5 GHz (fast), bg = 2.4 GHz (range)
+CHANNEL="0"       # 0 = auto
+CONN_NAME="Hotspot"
+HIDDEN="false"
+
+die() { printf 'hotspot: %s\n' "$*" >&2; exit 1; }
+info() { printf 'hotspot: %s\n' "$*"; }
+have() { command -v "$1" >/dev/null 2>&1; }
+
+need_nm() {
+  have nmcli || die "nmcli not found (NetworkManager required)"
+}
+
+ensure_dirs() {
+  mkdir -p "$CONFIG_DIR" "$STATE_DIR"
+}
+
+# ---------- config ----------
+
+write_default_config() {
+  ensure_dirs
+  local wifi
+  wifi="$(detect_wifi_iface || true)"
+  cat >"$CONFIG_FILE" <<EOF
+# hotspot configuration — edit with \`hotspot config\` or \`hotspot tui\`
+# Lines starting with # are comments. key=value only.
+
+# Wi‑Fi network name shown to clients
+ssid=nixos-hotspot
+
+# WPA2 passphrase (8–63 characters). Required for hotspot up.
+password=
+
+# Wi‑Fi interface for the access point (empty = auto-detect)
+wifi_iface=${wifi}
+
+# Interface that has internet (empty = default route, usually ethernet)
+upstream_iface=
+
+# Frequency band: a = 5 GHz (faster, full LAN-class throughput),
+#                 bg = 2.4 GHz (better range / older devices)
+band=a
+
+# Channel number, or 0 for automatic
+channel=0
+
+# NetworkManager connection profile name
+connection_name=Hotspot
+
+# Hide SSID from scans (true/false)
+hidden=false
+EOF
+  chmod 600 "$CONFIG_FILE"
+}
+
+load_config() {
+  ensure_dirs
+  [[ -f "$CONFIG_FILE" ]] || write_default_config
+
+  # shellcheck disable=SC1090
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    line="${line%%#*}"
+    line="${line#"${line%%[![:space:]]*}"}"
+    line="${line%"${line##*[![:space:]]}"}"
+    [[ -z "$line" ]] && continue
+    [[ "$line" == *=* ]] || continue
+    local key="${line%%=*}"
+    local val="${line#*=}"
+    key="${key%"${key##*[![:space:]]}"}"
+    key="${key#"${key%%[![:space:]]*}"}"
+    val="${val%"${val##*[![:space:]]}"}"
+    val="${val#"${val%%[![:space:]]*}"}"
+    # strip optional quotes
+    if [[ "$val" == \"*\" && "$val" == *\" ]]; then
+      val="${val:1:${#val}-2}"
+    fi
+    case "$key" in
+      ssid) SSID="$val" ;;
+      password) PASSWORD="$val" ;;
+      wifi_iface) WIFI_IFACE="$val" ;;
+      upstream_iface) UPSTREAM_IFACE="$val" ;;
+      band) BAND="$val" ;;
+      channel) CHANNEL="$val" ;;
+      connection_name) CONN_NAME="$val" ;;
+      hidden) HIDDEN="$val" ;;
+    esac
+  done <"$CONFIG_FILE"
+}
+
+save_config() {
+  ensure_dirs
+  cat >"$CONFIG_FILE" <<EOF
+# hotspot configuration — edit with \`hotspot config\` or \`hotspot tui\`
+
+ssid=${SSID}
+password=${PASSWORD}
+wifi_iface=${WIFI_IFACE}
+upstream_iface=${UPSTREAM_IFACE}
+band=${BAND}
+channel=${CHANNEL}
+connection_name=${CONN_NAME}
+hidden=${HIDDEN}
+EOF
+  chmod 600 "$CONFIG_FILE"
+  info "wrote $CONFIG_FILE"
+}
+
+# ---------- detection ----------
+
+detect_wifi_iface() {
+  # Prefer NM wifi devices that support AP
+  local dev
+  while IFS=: read -r dev type state _; do
+    [[ "$type" == "wifi" ]] || continue
+    [[ "$dev" == p2p-* ]] && continue
+    if nmcli -t -f WIFI-PROPERTIES.AP device show "$dev" 2>/dev/null | grep -qi 'yes'; then
+      printf '%s\n' "$dev"
+      return 0
+    fi
+  done < <(nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null)
+  # Fallback: first wifi device
+  nmcli -t -f DEVICE,TYPE device status 2>/dev/null |
+    awk -F: '$2=="wifi" && $1 !~ /^p2p-/ {print $1; exit}'
+}
+
+detect_upstream() {
+  if [[ -n "${UPSTREAM_IFACE}" ]]; then
+    printf '%s\n' "$UPSTREAM_IFACE"
+    return 0
+  fi
+  # Default IPv4 route device
+  local dev
+  dev="$(ip -4 route show default 2>/dev/null | awk '/^default/ {print $5; exit}')"
+  if [[ -n "$dev" ]]; then
+    printf '%s\n' "$dev"
+    return 0
+  fi
+  # Prefer ethernet
+  nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null |
+    awk -F: '$2=="ethernet" && $3 ~ /connected/ {print $1; exit}'
+}
+
+resolve_wifi() {
+  if [[ -n "$WIFI_IFACE" ]]; then
+    printf '%s\n' "$WIFI_IFACE"
+    return 0
+  fi
+  detect_wifi_iface
+}
+
+# ---------- NM helpers ----------
+
+conn_exists() {
+  nmcli -t -f NAME connection show 2>/dev/null | grep -Fxq "$1"
+}
+
+is_active() {
+  local name="${1:-$CONN_NAME}"
+  nmcli -t -f NAME connection show --active 2>/dev/null | grep -Fxq "$name"
+}
+
+wifi_radio_on() {
+  local r
+  r="$(nmcli -t -f WIFI radio 2>/dev/null || true)"
+  [[ "$r" == "enabled" ]]
+}
+
+ensure_wifi_on() {
+  if ! wifi_radio_on; then
+    info "enabling Wi‑Fi radio"
+    nmcli radio wifi on
+  fi
+}
+
+validate_password() {
+  local p="$1"
+  local n=${#p}
+  if ((n < 8 || n > 63)); then
+    die "password must be 8–63 characters (got $n). Set with: hotspot config"
+  fi
+}
+
+validate_band() {
+  case "$1" in
+    a | bg | abg) ;;
+    5 | 5ghz | 5GHz) BAND="a" ;;
+    2.4 | 24 | 2ghz | 2.4ghz | 2.4GHz) BAND="bg" ;;
+    *) die "invalid band '$1' (use a=5GHz or bg=2.4GHz)" ;;
+  esac
+}
+
+# Build / refresh the AP connection profile for max-throughput shared hotspot.
+ensure_profile() {
+  local wifi="$1"
+  validate_password "$PASSWORD"
+  validate_band "$BAND"
+
+  local hidden_val=0
+  case "${HIDDEN,,}" in
+    true | 1 | yes | on) hidden_val=1 ;;
+  esac
+
+  if conn_exists "$CONN_NAME"; then
+    nmcli connection modify "$CONN_NAME" \
+      connection.interface-name "$wifi" \
+      802-11-wireless.ssid "$SSID" \
+      802-11-wireless.mode ap \
+      802-11-wireless.band "$BAND" \
+      802-11-wireless.hidden "$hidden_val" \
+      802-11-wireless-security.key-mgmt wpa-psk \
+      802-11-wireless-security.psk "$PASSWORD" \
+      ipv4.method shared \
+      ipv6.method ignore \
+      connection.autoconnect no \
+      >/dev/null
+  else
+    nmcli connection add type wifi ifname "$wifi" con-name "$CONN_NAME" \
+      autoconnect no ssid "$SSID" \
+      802-11-wireless.mode ap \
+      802-11-wireless.band "$BAND" \
+      ipv4.method shared \
+      ipv6.method ignore \
+      wifi-sec.key-mgmt wpa-psk \
+      wifi-sec.psk "$PASSWORD" \
+      >/dev/null
+    nmcli connection modify "$CONN_NAME" \
+      802-11-wireless.hidden "$hidden_val" \
+      connection.autoconnect no \
+      >/dev/null
+  fi
+
+  if [[ "$CHANNEL" != "0" && -n "$CHANNEL" ]]; then
+    nmcli connection modify "$CONN_NAME" 802-11-wireless.channel "$CHANNEL" >/dev/null
+  else
+    # Clear pinned channel for auto selection when possible
+    nmcli connection modify "$CONN_NAME" 802-11-wireless.channel 0 >/dev/null 2>&1 || true
+  fi
+
+  printf '%s\n' "$CONN_NAME" >"$CONN_MARKER"
+}
+
+# ---------- commands ----------
+
+cmd_up() {
+  need_nm
+  load_config
+  ensure_dirs
+
+  local wifi upstream
+  wifi="$(resolve_wifi)" || true
+  [[ -n "$wifi" ]] || die "no Wi‑Fi interface found (set wifi_iface in config)"
+  upstream="$(detect_upstream)" || true
+  [[ -n "$upstream" ]] || die "no upstream (internet) interface found"
+
+  if [[ "$wifi" == "$upstream" ]]; then
+    die "wifi_iface and upstream_iface are the same ($wifi). Connect ethernet for LAN sharing, or set upstream_iface."
+  fi
+
+  # Upstream should be connected
+  if ! nmcli -t -f DEVICE,STATE device status | grep -E "^${upstream}:connected" >/dev/null; then
+    # soft check — interface may be up without NM connection name
+    if ! ip -4 addr show dev "$upstream" 2>/dev/null | grep -q 'inet '; then
+      die "upstream '$upstream' has no IPv4 address (plug into LAN / connect first)"
+    fi
+  fi
+
+  if is_active "$CONN_NAME"; then
+    info "already up ($CONN_NAME on $wifi)"
+    cmd_status
+    return 0
+  fi
+
+  # Tear down any other wifi connection on this iface
+  local active_wifi
+  active_wifi="$(nmcli -t -f NAME,DEVICE,TYPE connection show --active 2>/dev/null |
+    awk -F: -v d="$wifi" '$2==d && $3 ~ /wireless/ {print $1}')"
+  if [[ -n "$active_wifi" && "$active_wifi" != "$CONN_NAME" ]]; then
+    info "disconnecting existing Wi‑Fi connection '$active_wifi'"
+    nmcli connection down "$active_wifi" >/dev/null || true
+  fi
+
+  ensure_wifi_on
+  ensure_profile "$wifi"
+
+  info "starting AP '$SSID' on $wifi (upstream $upstream, band $BAND)"
+  if ! nmcli connection up "$CONN_NAME" ifname "$wifi"; then
+    die "failed to start hotspot. Try band=bg if 5 GHz is blocked, or check: journalctl -u NetworkManager -n 50"
+  fi
+
+  # Give NM a moment to assign the shared subnet
+  sleep 0.4
+  cmd_status
+  info "phone: connect to SSID '${SSID}' (password from config). Internet is NATed from ${upstream}."
+}
+
+cmd_down() {
+  need_nm
+  load_config
+  local name="$CONN_NAME"
+  if [[ -f "$CONN_MARKER" ]]; then
+    name="$(cat "$CONN_MARKER" 2>/dev/null || true)"
+    name="${name:-$CONN_NAME}"
+  fi
+
+  if is_active "$name"; then
+    info "stopping $name"
+    nmcli connection down "$name" >/dev/null || true
+  elif conn_exists "$name"; then
+    info "connection $name is not active"
+  else
+    info "no active hotspot ($name)"
+  fi
+
+  # Leave radio alone (user may want Wi‑Fi client mode next)
+  info "hotspot down"
+}
+
+cmd_status() {
+  need_nm
+  load_config
+
+  local wifi upstream ip clients
+  wifi="$(resolve_wifi 2>/dev/null || true)"
+  upstream="$(detect_upstream 2>/dev/null || true)"
+
+  printf 'Hotspot status\n'
+  printf '  config:     %s\n' "$CONFIG_FILE"
+  printf '  ssid:       %s\n' "$SSID"
+  printf '  wifi:       %s\n' "${wifi:-?}"
+  printf '  upstream:   %s\n' "${upstream:-?}"
+  printf '  band:       %s\n' "$BAND"
+  printf '  channel:    %s\n' "$CHANNEL"
+  printf '  profile:    %s\n' "$CONN_NAME"
+
+  if is_active "$CONN_NAME"; then
+    printf '  state:      UP\n'
+    ip="$(nmcli -t -f IP4.ADDRESS device show "${wifi}" 2>/dev/null | head -1 | cut -d: -f2- || true)"
+    [[ -z "$ip" ]] && ip="$(ip -4 -o addr show dev "${wifi}" 2>/dev/null | awk '{print $4; exit}')"
+    printf '  ap address: %s\n' "${ip:-unknown}"
+    # Connected stations via iw if available
+    if have iw && [[ -n "$wifi" ]]; then
+      clients="$(iw dev "$wifi" station dump 2>/dev/null | awk '/Station/ {c++} END {print c+0}')"
+      printf '  clients:    %s\n' "$clients"
+    fi
+  else
+    printf '  state:      DOWN\n'
+  fi
+
+  if [[ -n "$upstream" ]]; then
+    local uip
+    uip="$(ip -4 -o addr show dev "$upstream" 2>/dev/null | awk '{print $4; exit}')"
+    printf '  upstream ip:%s\n' " ${uip:-none}"
+  fi
+}
+
+cmd_clients() {
+  need_nm
+  load_config
+  local wifi
+  wifi="$(resolve_wifi)" || die "no wifi iface"
+  is_active "$CONN_NAME" || die "hotspot is down"
+
+  if have iw; then
+    local dump
+    dump="$(iw dev "$wifi" station dump 2>/dev/null || true)"
+    if [[ -z "$dump" ]]; then
+      info "no stations associated (or driver does not report them)"
+      return 0
+    fi
+    printf '%s\n' "$dump"
+  fi
+
+  # ARP/neighbors on the shared subnet (usually 10.42.0.0/24)
+  info "neighbors on AP interface:"
+  ip neigh show dev "$wifi" 2>/dev/null || true
+}
+
+cmd_config_show() {
+  load_config
+  if [[ ! -f "$CONFIG_FILE" ]]; then
+    die "no config at $CONFIG_FILE"
+  fi
+  # Redact password in display unless --show-secrets
+  if [[ "${1:-}" == "--show-secrets" ]]; then
+    cat "$CONFIG_FILE"
+  else
+    sed -E 's/^(password=).*/\1********/' "$CONFIG_FILE"
+  fi
+  printf '\n# path: %s\n' "$CONFIG_FILE"
+}
+
+cmd_config_edit() {
+  load_config
+  ensure_dirs
+  local editor="${EDITOR:-${VISUAL:-nano}}"
+  "$editor" "$CONFIG_FILE"
+  load_config
+  info "config reloaded (ssid=$SSID band=$BAND)"
+}
+
+cmd_config_set() {
+  load_config
+  [[ $# -ge 1 ]] || die "usage: hotspot config set key=value [key=value...]"
+  local pair key val
+  for pair in "$@"; do
+    [[ "$pair" == *=* ]] || die "expected key=value, got: $pair"
+    key="${pair%%=*}"
+    val="${pair#*=}"
+    case "$key" in
+      ssid) SSID="$val" ;;
+      password | pass | psk) PASSWORD="$val" ;;
+      wifi_iface | wifi) WIFI_IFACE="$val" ;;
+      upstream_iface | upstream) UPSTREAM_IFACE="$val" ;;
+      band) BAND="$val" ;;
+      channel) CHANNEL="$val" ;;
+      connection_name | name) CONN_NAME="$val" ;;
+      hidden) HIDDEN="$val" ;;
+      *) die "unknown key: $key (ssid password wifi_iface upstream_iface band channel connection_name hidden)" ;;
+    esac
+  done
+  save_config
+}
+
+cmd_qr() {
+  load_config
+  validate_password "$PASSWORD"
+  # WIFI:T:WPA;S:ssid;P:password;H:hidden;;
+  local hidden_flag="false"
+  case "${HIDDEN,,}" in true | 1 | yes | on) hidden_flag="true" ;; esac
+  # Escape special chars in SSID/password for WIFI QR
+  local s p
+  s="${SSID//\\/\\\\}"
+  s="${s//;/\\;}"
+  s="${s//,/\\,}"
+  s="${s//\"/\\\"}"
+  s="${s//:/\\:}"
+  p="${PASSWORD//\\/\\\\}"
+  p="${p//;/\\;}"
+  p="${p//,/\\,}"
+  p="${p//\"/\\\"}"
+  p="${p//:/\\:}"
+  local payload="WIFI:T:WPA;S:${s};P:${p};H:${hidden_flag};;"
+  if have qrencode; then
+    qrencode -t ANSIUTF8 "$payload"
+  else
+    info "install qrencode for a scannable QR. Payload:"
+    printf '%s\n' "$payload"
+  fi
+}
+
+# ---------- TUI (fzf) ----------
+
+tui_input() {
+  # prompt default -> value via fzf --print-query or read
+  local prompt="$1" default="${2:-}"
+  local out
+  if have fzf; then
+    out="$(
+      printf '%s\n' "$default" |
+        fzf --print-query --info=hidden --prompt="$prompt " --height=4 --reverse \
+          --bind 'enter:print-query+abort' --disabled 2>/dev/null | tail -1
+    )" || true
+    # fzf --disabled with print-query: first line is query
+    if [[ -z "$out" ]]; then
+      out="$default"
+    fi
+  else
+    read -r -p "$prompt [$default]: " out || true
+    out="${out:-$default}"
+  fi
+  printf '%s\n' "$out"
+}
+
+tui_pick() {
+  local prompt="$1"
+  shift
+  if have fzf; then
+    printf '%s\n' "$@" | fzf --prompt="$prompt " --height=12 --reverse --cycle
+  else
+    local i=1 opt
+    printf '%s\n' "$prompt" >&2
+    for opt in "$@"; do
+      printf '  %d) %s\n' "$i" "$opt" >&2
+      i=$((i + 1))
+    done
+    local choice
+    read -r -p "> " choice
+    if [[ "$choice" =~ ^[0-9]+$ ]] && ((choice >= 1 && choice <= $#)); then
+      printf '%s\n' "${!choice}"
+    else
+      # match by string
+      printf '%s\n' "$choice"
+    fi
+  fi
+}
+
+cmd_tui() {
+  need_nm
+  load_config
+  ensure_dirs
+
+  while true; do
+    local state="DOWN"
+    is_active "$CONN_NAME" && state="UP"
+    local action
+    action="$(
+      tui_pick "hotspot [$state]  " \
+        "Start hotspot (up)" \
+        "Stop hotspot (down)" \
+        "Status" \
+        "Show clients" \
+        "Edit SSID" \
+        "Edit password" \
+        "Band (5 GHz / 2.4 GHz)" \
+        "Channel" \
+        "Wi‑Fi interface" \
+        "Upstream interface" \
+        "Show config" \
+        "QR code" \
+        "Save & exit" \
+        "Exit without save"
+    )" || true
+
+    case "$action" in
+      "Start hotspot (up)")
+        cmd_up || true
+        read -r -p "press enter..." _
+        ;;
+      "Stop hotspot (down)")
+        cmd_down || true
+        read -r -p "press enter..." _
+        ;;
+      "Status")
+        cmd_status || true
+        read -r -p "press enter..." _
+        ;;
+      "Show clients")
+        cmd_clients || true
+        read -r -p "press enter..." _
+        ;;
+      "Edit SSID")
+        SSID="$(tui_input "SSID" "$SSID")"
+        ;;
+      "Edit password")
+        PASSWORD="$(tui_input "Password (8-63 chars)" "$PASSWORD")"
+        ;;
+      "Band (5 GHz / 2.4 GHz)")
+        local b
+        b="$(tui_pick "Band: " "a (5 GHz — faster)" "bg (2.4 GHz — longer range)")" || true
+        case "$b" in
+          a*) BAND="a" ;;
+          bg*) BAND="bg" ;;
+        esac
+        ;;
+      "Channel")
+        CHANNEL="$(tui_input "Channel (0=auto)" "$CHANNEL")"
+        ;;
+      "Wi‑Fi interface")
+        local ifaces
+        mapfile -t ifaces < <(nmcli -t -f DEVICE,TYPE device status | awk -F: '$2=="wifi" && $1 !~ /^p2p-/ {print $1}')
+        if ((${#ifaces[@]})); then
+          WIFI_IFACE="$(tui_pick "Wi‑Fi iface: " "${ifaces[@]}" "(auto)")"
+          [[ "$WIFI_IFACE" == "(auto)" ]] && WIFI_IFACE=""
+        else
+          WIFI_IFACE="$(tui_input "Wi‑Fi iface" "$WIFI_IFACE")"
+        fi
+        ;;
+      "Upstream interface")
+        local uifaces
+        mapfile -t uifaces < <(nmcli -t -f DEVICE,TYPE,STATE device status |
+          awk -F: '$1!="lo" && $2!="wifi-p2p" {printf "%s (%s, %s)\n",$1,$2,$3}')
+        local pick
+        pick="$(tui_pick "Upstream: " "${uifaces[@]}" "(auto — default route)")" || true
+        if [[ "$pick" == "(auto"* ]]; then
+          UPSTREAM_IFACE=""
+        else
+          UPSTREAM_IFACE="${pick%% *}"
+        fi
+        ;;
+      "Show config")
+        save_config
+        cmd_config_show
+        read -r -p "press enter..." _
+        ;;
+      "QR code")
+        save_config
+        cmd_qr || true
+        read -r -p "press enter..." _
+        ;;
+      "Save & exit")
+        save_config
+        break
+        ;;
+      "Exit without save" | "")
+        break
+        ;;
+    esac
+  done
+}
+
+cmd_init() {
+  if [[ -f "$CONFIG_FILE" ]]; then
+    info "config already exists: $CONFIG_FILE"
+  else
+    write_default_config
+    info "created $CONFIG_FILE"
+  fi
+  local wifi
+  wifi="$(detect_wifi_iface || true)"
+  info "detected wifi: ${wifi:-none}"
+  info "detected upstream: $(detect_upstream || echo none)"
+  info "edit password: hotspot config set password=YOUR_SECRET"
+  info "or run: hotspot tui"
+}
+
+cmd_help() {
+  cat <<EOF
+hotspot ${VERSION} — share this machine's LAN internet over Wi‑Fi (NetworkManager AP)
+
+Usage:
+  hotspot up              Start hotspot (NAT share, like Windows Mobile Hotspot)
+  hotspot down            Stop hotspot
+  hotspot status          Show status
+  hotspot clients         List associated clients
+  hotspot tui             Interactive menu (nmtui-style, uses fzf if available)
+  hotspot config          Show config (password redacted)
+  hotspot config --show-secrets
+  hotspot config edit     Open config in \$EDITOR
+  hotspot config set k=v  Set one or more keys
+  hotspot qr              Print Wi‑Fi QR for phones
+  hotspot init            Create default config
+  hotspot help            This help
+
+Config file: ${CONFIG_FILE}
+
+Typical first-time setup:
+  hotspot init
+  hotspot config set password='your-long-secret' ssid='MyLAN'
+  hotspot up
+
+Notes:
+  • Upstream is your LAN (usually ethernet). Wi‑Fi becomes the AP.
+  • band=a uses 5 GHz for higher throughput; band=bg for 2.4 GHz range.
+  • Clients get a private subnet (10.42.0.x) with NAT — same model as Windows.
+  • Requires NetworkManager and a Wi‑Fi card with AP mode (yours does).
+EOF
+}
+
+main() {
+  local cmd="${1:-help}"
+  shift || true
+  case "$cmd" in
+    up | start | on) cmd_up "$@" ;;
+    down | stop | off) cmd_down "$@" ;;
+    status | st) cmd_status "$@" ;;
+    clients | stations) cmd_clients "$@" ;;
+    tui | menu | ui) cmd_tui "$@" ;;
+    init) cmd_init "$@" ;;
+    qr | qrcode) cmd_qr "$@" ;;
+    config | cfg)
+      local sub="${1:-show}"
+      shift || true
+      case "$sub" in
+        show | "") cmd_config_show "$@" ;;
+        --show-secrets) cmd_config_show --show-secrets ;;
+        edit | e) cmd_config_edit "$@" ;;
+        set) cmd_config_set "$@" ;;
+        path) printf '%s\n' "$CONFIG_FILE" ;;
+        *) die "unknown config subcommand: $sub (show|edit|set|path)" ;;
+      esac
+      ;;
+    help | -h | --help) cmd_help ;;
+    version | -V | --version) printf '%s\n' "$VERSION" ;;
+    *) die "unknown command: $cmd (try: hotspot help)" ;;
+  esac
+}
+
+main "$@"
