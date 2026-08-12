@@ -111,11 +111,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    eden = {
-      url = "github:Daaboulex/eden-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     # Own nixpkgs pin + crane/rust-overlay — do not follows nixpkgs or
     # store paths miss https://kopuz.cachix.org prebuilds.
     kopuz.url = "github:temidaradev/kopuz";
@@ -150,7 +145,6 @@
         inputs.niri.nixosModules.niri
         inputs.noctalia.nixosModules.default
         inputs.qylock.nixosModules.default
-        inputs.eden.nixosModules.default
         nix-pi-coding-agent.nixosModules.pi
       ];
     };

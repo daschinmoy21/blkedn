@@ -197,8 +197,6 @@ in {
     steam.gamescopeSession.enable = true;
     gamemode.enable = true;
 
-    eden.enable = true;
-
     virt-manager.enable = true;
 
     dconf.enable = true;

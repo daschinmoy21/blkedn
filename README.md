@@ -90,8 +90,10 @@ Configured in `host/programs.nix` and mirrored in `flake.nix` `nixConfig` so bot
 | `nix-gaming` / `nixpkgs-wayland` | gaming + Wayland |
 | `numtide` / `helix` / `devenv` / `chaotic-nyx` | tooling + large prebuild sets |
 
+**Eden** is the official **amd64 PGO AppImage** (`apps/eden.nix`) — ~70 MB download, no CMake source build (Daaboulex/Nyramu flakes compile for hours).
+
 Also: `always-allow-substitutes`, higher `max-substitution-jobs` / `http-connections`.  
-**Still builds from source** when a flake has no public cache (e.g. helium, antigravity, codex, qylock, eden, pi-agent) or when you `override` a package (changes the drv hash). Prefer stock nixpkgs attrs when possible.
+**Still builds from source** when a flake has no public cache (e.g. helium, antigravity, codex, qylock, pi-agent) or when you `override` a package (changes the drv hash). Prefer stock nixpkgs attrs when possible.
 
 After editing caches: `nh os switch` (or `sudo nixos-rebuild switch --flake .#nixos`).
 
