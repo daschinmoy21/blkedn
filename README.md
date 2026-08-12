@@ -41,7 +41,7 @@ sudo passwd crimxnhaze
 **Notes**:
 
 - `host/priv/` is reference-only, not imported. No git-crypt needed.
-- Noctalia binary cache is pre-configured (`noctalia.cachix.org`).
+- Binary caches are pre-configured (see **Binary caches** below) so rebuilds prefer substitutes over compiling.
 - Lock: run `qylock-lock` or bind it to a key (`Mod+Alt+L`).
 - Walls live on SSD2 (`~/walls` → `SSD2/walls`); not in git.
 - NVIDIA + Intel PRIME offload configured (`hw/nvidia.nix`); AMD video driver removed.
@@ -70,6 +70,30 @@ apps/
 tools/
   hotspot/hotspot  — CLI source (up/down/tui/config)
 ```
+
+### Binary caches
+
+Configured in `host/programs.nix` and mirrored in `flake.nix` `nixConfig` so both system rebuilds and ad-hoc `nix` commands can download prebuilts.
+
+| Cache | Covers |
+|-------|--------|
+| `cache.nixos.org` | nixpkgs / official |
+| `noctalia.cachix.org` | Noctalia shell (`cachix` branch) |
+| `niri.cachix.org` | niri-flake |
+| `nvf` / `notashelf` | nvf Neovim |
+| `zen-browser.cachix.org` | Zen browser flake |
+| `kevinpita.cachix.org` | herdr |
+| `kopuz.cachix.org` | kopuz (own nixpkgs pin — do not `follows` nixpkgs) |
+| `ezkea.cachix.org` | AAGL / game launchers |
+| `nix-community.cachix.org` | community packages / HM-related |
+| `cuda-maintainers.cachix.org` | NVIDIA/CUDA |
+| `nix-gaming` / `nixpkgs-wayland` | gaming + Wayland |
+| `numtide` / `helix` / `devenv` / `chaotic-nyx` | tooling + large prebuild sets |
+
+Also: `always-allow-substitutes`, higher `max-substitution-jobs` / `http-connections`.  
+**Still builds from source** when a flake has no public cache (e.g. helium, antigravity, codex, qylock, eden, pi-agent) or when you `override` a package (changes the drv hash). Prefer stock nixpkgs attrs when possible.
+
+After editing caches: `nh os switch` (or `sudo nixos-rebuild switch --flake .#nixos`).
 
 ### Wi‑Fi hotspot CLI
 
