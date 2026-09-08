@@ -126,7 +126,7 @@ test -f ~/walls/katana.png && echo walls ok
 | WM | niri (nixpkgs) |
 | Shell | Noctalia v5 (binary cache, NixOS module — not Home Manager) |
 | Lock | qylock (`Mod+Alt+L` → `qylock-lock`) |
-| Greeter | greetd + tuigreet |
+| Login | SDDM + qylock theme (same theme as lock) |
 | GPU | NVIDIA PRIME + Intel (see `hw/nvidia.nix`) |
 | Editor | nvf Neovim |
 

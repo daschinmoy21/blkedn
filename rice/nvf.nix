@@ -1,7 +1,6 @@
 {
   inputs,
   pkgs,
-  config,
   ...
 }: {
   imports = [inputs.nvf.homeManagerModules.default];
@@ -16,6 +15,11 @@
       lineNumberMode = "number";
       enableLuaLoader = true;
       preventJunkFiles = true;
+      # Kill netrw early so neo-tree can own directory buffers (no race / Invalid window id)
+      globals = {
+        loaded_netrw = 1;
+        loaded_netrwPlugin = 1;
+      };
       options = {
         tabstop = 4;
         shiftwidth = 2;
@@ -193,8 +197,10 @@
       spellcheck = {
         enable = true;
         languages = ["en"];
+        # Dirtytalk "programming" wordlist prompts Download? on every open if
+        # the spellfile is missing; disable to avoid the interactive popup.
         programmingWordlist = {
-          enable = true;
+          enable = false;
         };
       };
 
@@ -259,7 +265,7 @@
           lsp = {
             enable = true;
           };
-          format.type = ["prettierd"];
+          format.type = ["prettier"];
           extensions.ts-error-translator = {
             enable = true;
           };
@@ -272,7 +278,7 @@
         };
         css = {
           enable = true;
-          format.type = ["prettierd"];
+          format.type = ["prettier"];
         };
         typst = {
           enable = true;
@@ -356,26 +362,27 @@
         };
       };
 
+      # base16-ayu-dark (tinted-theming); nvf theme name is "base16" + palette
       theme = {
         enable = true;
         name = "base16";
         base16-colors = {
-          base00 = "#282828"; # Background
-          base01 = "#3c3836"; # Lighter Background
-          base02 = "#504945"; # Selection Background
-          base03 = "#665c54"; # Comments
-          base04 = "#bdae93"; # Dark Foreground
-          base05 = "#ebdbb2"; # Foreground
-          base06 = "#d5c4a1"; # Light Foreground
-          base07 = "#fbf1c7"; # Light Background
-          base08 = "#fb4934"; # Red
-          base09 = "#fe8019"; # Orange
-          base0A = "#fabd2f"; # Yellow
-          base0B = "#b8bb26"; # Green
-          base0C = "#8ec07c"; # Aqua
-          base0D = "#83a598"; # Blue
-          base0E = "#d3869b"; # Purple
-          base0F = "#d65d0e"; # Brown
+          base00 = "#0b0e14"; # Background
+          base01 = "#131721"; # Lighter Background
+          base02 = "#202229"; # Selection Background
+          base03 = "#3e4b59"; # Comments
+          base04 = "#bfbdb6"; # Dark Foreground
+          base05 = "#e6e1cf"; # Foreground
+          base06 = "#ece8db"; # Light Foreground
+          base07 = "#f2f0e7"; # Light Background
+          base08 = "#f07178"; # Red
+          base09 = "#ff8f40"; # Orange
+          base0A = "#ffb454"; # Yellow
+          base0B = "#aad94c"; # Green
+          base0C = "#95e6cb"; # Aqua
+          base0D = "#59c2ff"; # Blue
+          base0E = "#d2a6ff"; # Purple
+          base0F = "#e6b450"; # Brown / accent
         };
       };
 
@@ -416,6 +423,12 @@
       filetree = {
         neo-tree = {
           enable = true;
+          setupOpts = {
+            filesystem = {
+              # netrw is disabled via vim.globals above; open dirs with neo-tree
+              hijack_netrw_behavior = "open_current";
+            };
+          };
         };
       };
 
@@ -431,9 +444,6 @@
         };
         ccc = {
           enable = false;
-        };
-        vim-wakatime = {
-          enable = true;
         };
         icon-picker = {
           enable = true;
@@ -475,12 +485,7 @@
         illuminate = {
           enable = true;
         };
-        breadcrumbs = {
-          enable = false;
-          navbuddy = {
-            enable = false;
-          };
-        };
+
         smartcolumn = {
           enable = true;
         };
@@ -519,20 +524,4 @@
     };
   };
 
-  home.activation = {
-    dirtytalkUpdate = config.lib.dag.entryAfter ["writeBoundary"] ''
-      # Check if programmingWordlist file already exists to avoid unnecessary downloads
-      WORDLIST_FILE="$HOME/.config/nvim/spell/programming.utf-8.add"
-      if [ ! -f "$WORDLIST_FILE" ]; then
-        echo "Programming wordlist not found, downloading via DirtytalkUpdate..."
-        if ${config.programs.nvf.finalPackage}/bin/nvim -c "DirtytalkUpdate" -c "qa!" 2>/dev/null; then
-          echo "DirtytalkUpdate completed successfully"
-        else
-          echo "DirtytalkUpdate failed, but continuing..." >&2
-        fi
-      else
-        echo "Programming wordlist already exists at $WORDLIST_FILE, skipping download"
-      fi
-    '';
-  };
 }

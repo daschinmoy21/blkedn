@@ -7,7 +7,8 @@
     enable = true;
     enableFishIntegration = true;
     settings = {
-      theme = "Matte Black";
+      # Matches nvim base16-ayu-dark (bg #0b0e14)
+      theme = "Ayu";
       command = "${pkgs.fish}/bin/fish";
 
     };

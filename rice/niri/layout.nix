@@ -1,6 +1,8 @@
 {...}: {
   programs.niri.settings = {
     layout = {
+      # Transparent so noctalia-wallpaper (in backdrop) shows through workspaces + overview
+      background-color = "transparent";
       gaps = 9;
       center-focused-column = "never"; # default is never in niri if not specified, black-don-os didn't specify so likely default. Rice had "on-overflow". I'll stick to default if not present.
       

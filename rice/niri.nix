@@ -35,6 +35,14 @@
           accel-profile = "flat";
         };
       };
+      # Panel advertises 60.025 as preferred; without this niri stays at 60 Hz.
+      outputs."eDP-1" = {
+        mode = {
+          width = 1920;
+          height = 1200;
+          refresh = 165.002;
+        };
+      };
     };
   };
 }

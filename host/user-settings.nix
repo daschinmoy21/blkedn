@@ -9,7 +9,10 @@
   users.users.crimxnhaze = {
     isNormalUser = true;
     description = "crimxnhaze";
-    extraGroups = ["networkmanager" "wheel" "kvm" "libvirtd" "samba" "vboxusers"];
+    # "docker" is needed to talk to the system Docker daemon without sudo.
+    # Warning: docker group membership is effectively root-equivalent.
+    # "kvm" is required for Docker Sandboxes (sbx) microVMs.
+    extraGroups = ["networkmanager" "wheel" "kvm" "libvirtd" "samba" "vboxusers" "docker"];
     packages = with pkgs; [
       #  kdePackages.kate #useful to have on hand tbh!
       #  thunderbird
@@ -21,7 +24,10 @@
       SHELL = "fish";
       EDITOR = "zededitor";
       VISUAL = "zededitor";
-      DOCKER_HOST = "unix:///run/podman/podman.sock";
+      # DOCKER_HOST left unset → host Docker Engine (unix:///var/run/docker.sock).
+      # Podman rootless socket (for tools that need it explicitly):
+      #   unix:///run/user/1000/podman/podman.sock
+      # Projects that invoke `podman` directly do not need DOCKER_HOST.
     };
   };
 

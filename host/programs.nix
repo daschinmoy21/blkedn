@@ -7,6 +7,9 @@
 }: let
   # Avoid package overrides here when possible — they miss binary caches and rebuild from source.
   system = pkgs.stdenv.hostPlatform.system;
+  heliumCdp = pkgs.callPackage ../pkgs/helium-cdp.nix {
+    helium = inputs.helium.packages.${system}.default;
+  };
 in {
   programs.nix-ld = {
     enable = true;
@@ -57,8 +60,10 @@ in {
   environment.systemPackages = with pkgs; [
     # system tools
     grok-build
+    grok-bot
     bluez-headers # bluetooth enabling
     pulseaudio # provides pactl
+    easyeffects # PipeWire audio effects
     alejandra #nix language formatting
     nix-init #tool of building packages
     xarchiver #GTK frontend for 7zip
@@ -73,7 +78,7 @@ in {
     code-cursor-fhs
     appimage-run
 
-    inputs.helium.packages.${system}.default
+    heliumCdp
     discord
     uv
     virtiofsd
@@ -97,8 +102,7 @@ in {
     git
     gh
     git-crypt #directory and file encryption
-    podman-desktop # GUI for Podman
-    lazydocker
+    lazydocker # TUI for host Docker Engine (DOCKER_HOST unset → docker.sock)
 
     # package managers
     wget
@@ -172,12 +176,25 @@ in {
     mpv
     ripgrep
     socat
-    t3code
+    # nightly AppImage (overlay) — replaces nixpkgs stable `t3code`
+    t3code-nightly
     inputs.kopuz.packages.${system}.default
+    brave-origin
+    winboat
+    opencode-desktop
+    # same as: nix profile install github:NousResearch/hermes-agent#desktop
+    inputs.hermes-agent.packages.${system}.desktop
 
     # manage / query binary caches (`cachix use …` when experimenting)
     cachix
   ];
+
+  # Login redirects use sand:// (and grokbot://). The desktop file already
+  # declares both; this makes the mapping survive first-launch registration.
+  xdg.mime.defaultApplications = {
+    "x-scheme-handler/sand" = "grok-bot.desktop";
+    "x-scheme-handler/grokbot" = "grok-bot.desktop";
+  };
 
   # Enable programs defined by Home Manager modules.
 

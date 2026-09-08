@@ -12,6 +12,7 @@
     ./qylock.nix
     ./greeter.nix
     ./services.nix
+    ./yt-cookies.nix
     ./user-settings.nix
     # ./priv/priv.nix
   ];

@@ -20,8 +20,13 @@ CONN_NAME="Hotspot"
 HIDDEN="false"
 
 die() { printf 'hotspot: %s\n' "$*" >&2; exit 1; }
+fail() { printf 'hotspot: %s\n' "$*" >&2; return 1; }
 info() { printf 'hotspot: %s\n' "$*"; }
 have() { command -v "$1" >/dev/null 2>&1; }
+password_ok() {
+  local n=${#1}
+  ((n >= 8 && n <= 63))
+}
 
 need_nm() {
   have nmcli || die "nmcli not found (NetworkManager required)"
@@ -191,8 +196,8 @@ ensure_wifi_on() {
 validate_password() {
   local p="$1"
   local n=${#p}
-  if ((n < 8 || n > 63)); then
-    die "password must be 8–63 characters (got $n). Set with: hotspot config"
+  if ! password_ok "$p"; then
+    fail "password must be 8–63 characters (got $n). Set with: hotspot config set password=..."
   fi
 }
 
@@ -201,8 +206,55 @@ validate_band() {
     a | bg | abg) ;;
     5 | 5ghz | 5GHz) BAND="a" ;;
     2.4 | 24 | 2ghz | 2.4ghz | 2.4GHz) BAND="bg" ;;
-    *) die "invalid band '$1' (use a=5GHz or bg=2.4GHz)" ;;
+    *) fail "invalid band '$1' (use a=5GHz or bg=2.4GHz)" ;;
   esac
+}
+
+phy_for_iface() {
+  have iw || return 1
+  iw dev "$1" info 2>/dev/null | awk '/wiphy/ {print "phy"$2; exit}'
+}
+
+# First channel the card may actually *start* an AP on (skip no-IR / DFS / disabled).
+# World-roaming Intel CNVi marks UNII-1/2A/2C as "no IR", so 5 GHz auto (ch 0)
+# hangs in wpa_supplicant until NM reports "802.1X supplicant took too long".
+first_ap_channel() {
+  local band="$1" phy="$2" start
+  have iw || return 1
+  case "$band" in
+    a) start='Band 2:' ;;
+    *) start='Band 1:' ;;
+  esac
+  iw phy "$phy" info 2>/dev/null | awk -v start="$start" '
+    index($0, start) {p=1; next}
+    p && /^Band / {exit}
+    p && /MHz/ && /\[[0-9]+\]/ {
+      if ($0 ~ /disabled/ || $0 ~ /no IR/ || $0 ~ /radar/) next
+      if (match($0, /\[[0-9]+\]/)) {
+        print substr($0, RSTART+1, RLENGTH-2)
+        exit
+      }
+    }
+  '
+}
+
+resolve_channel() {
+  local wifi="$1" phy ch
+  [[ "$CHANNEL" == "0" || -z "$CHANNEL" ]] || return 0
+  phy="$(phy_for_iface "$wifi")" || true
+  [[ -n "${phy:-}" ]] || return 0
+  ch="$(first_ap_channel "$BAND" "$phy")" || true
+  if [[ -n "$ch" ]]; then
+    CHANNEL="$ch"
+    info "auto-selected AP channel $CHANNEL (band $BAND; skipped no-IR/DFS)"
+    return 0
+  fi
+  if [[ "$BAND" == "a" ]]; then
+    info "no 5 GHz AP-legal channel; falling back to 2.4 GHz"
+    BAND="bg"
+    ch="$(first_ap_channel bg "$phy")" || true
+    CHANNEL="${ch:-6}"
+  fi
 }
 
 # Build / refresh the AP connection profile for max-throughput shared hotspot.
@@ -210,6 +262,7 @@ ensure_profile() {
   local wifi="$1"
   validate_password "$PASSWORD"
   validate_band "$BAND"
+  resolve_channel "$wifi"
 
   local hidden_val=0
   case "${HIDDEN,,}" in
@@ -224,6 +277,9 @@ ensure_profile() {
       802-11-wireless.band "$BAND" \
       802-11-wireless.hidden "$hidden_val" \
       802-11-wireless-security.key-mgmt wpa-psk \
+      802-11-wireless-security.proto rsn \
+      802-11-wireless-security.pairwise ccmp \
+      802-11-wireless-security.group ccmp \
       802-11-wireless-security.psk "$PASSWORD" \
       ipv4.method shared \
       ipv6.method ignore \
@@ -237,6 +293,9 @@ ensure_profile() {
       ipv4.method shared \
       ipv6.method ignore \
       wifi-sec.key-mgmt wpa-psk \
+      wifi-sec.proto rsn \
+      wifi-sec.pairwise ccmp \
+      wifi-sec.group ccmp \
       wifi-sec.psk "$PASSWORD" \
       >/dev/null
     nmcli connection modify "$CONN_NAME" \
@@ -264,19 +323,19 @@ cmd_up() {
 
   local wifi upstream
   wifi="$(resolve_wifi)" || true
-  [[ -n "$wifi" ]] || die "no Wi‑Fi interface found (set wifi_iface in config)"
+  [[ -n "$wifi" ]] || fail "no Wi‑Fi interface found (set wifi_iface in config)"
   upstream="$(detect_upstream)" || true
-  [[ -n "$upstream" ]] || die "no upstream (internet) interface found"
+  [[ -n "$upstream" ]] || fail "no upstream (internet) interface found"
 
   if [[ "$wifi" == "$upstream" ]]; then
-    die "wifi_iface and upstream_iface are the same ($wifi). Connect ethernet for LAN sharing, or set upstream_iface."
+    fail "wifi_iface and upstream_iface are the same ($wifi). Connect ethernet for LAN sharing, or set upstream_iface."
   fi
 
   # Upstream should be connected
   if ! nmcli -t -f DEVICE,STATE device status | grep -E "^${upstream}:connected" >/dev/null; then
     # soft check — interface may be up without NM connection name
     if ! ip -4 addr show dev "$upstream" 2>/dev/null | grep -q 'inet '; then
-      die "upstream '$upstream' has no IPv4 address (plug into LAN / connect first)"
+      fail "upstream '$upstream' has no IPv4 address (plug into LAN / connect first)"
     fi
   fi
 
@@ -300,7 +359,7 @@ cmd_up() {
 
   info "starting AP '$SSID' on $wifi (upstream $upstream, band $BAND)"
   if ! nmcli connection up "$CONN_NAME" ifname "$wifi"; then
-    die "failed to start hotspot. Try band=bg if 5 GHz is blocked, or check: journalctl -u NetworkManager -n 50"
+    fail "failed to start hotspot. Try band=bg if 5 GHz is blocked, or check: journalctl -u NetworkManager -n 50"
   fi
 
   # Give NM a moment to assign the shared subnet
@@ -373,8 +432,8 @@ cmd_clients() {
   need_nm
   load_config
   local wifi
-  wifi="$(resolve_wifi)" || die "no wifi iface"
-  is_active "$CONN_NAME" || die "hotspot is down"
+  wifi="$(resolve_wifi)" || fail "no wifi iface"
+  is_active "$CONN_NAME" || fail "hotspot is down"
 
   if have iw; then
     local dump

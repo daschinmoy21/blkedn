@@ -47,22 +47,6 @@
     remoteControl.enable = true;
   };
 
-  home.file.".local/bin/command-code-desktop" = {
-    executable = true;
-    text = ''
-      #!/usr/bin/env bash
-      exec "$HOME/.local/opt/command-code/opt/Command Code/command-code" "$@"
-    '';
-  };
-
-  xdg.desktopEntries.command-code = {
-    name = "Command Code";
-    exec = "command-code-desktop %U";
-    icon = "${config.home.homeDirectory}/.local/opt/command-code/usr/share/icons/hicolor/256x256/apps/command-code.png";
-    comment = "Command Code desktop app";
-    categories = ["Development"];
-  };
-
   home.sessionPath = [
     "$HOME/.local/bin"
     "$HOME/.npm-global/bin"

@@ -107,11 +107,11 @@
           "Noto Sans Mono CJK JP"
         ];
         sansSerif = [
-          "Noto Sans"
+          "Iosevka Nerd Font"
           "Noto Sans CJK JP"
         ];
         serif = [
-          "Noto Serif"
+          "Iosevka Nerd Font"
           "Noto Serif CJK JP"
         ];
       };

@@ -6,6 +6,7 @@
   home.packages = with pkgs; [
     # clipboard-jh
     # superfile
+    wl-clipboard # wl-copy / wl-paste — needed for Wayland image/text clipboard tools
     numbat
     bottom
     lazygit

@@ -12,23 +12,30 @@
     ./hardware-configuration.nix
     ./host/host-configuration.nix
     ./hw/nvidia.nix
+    ./hw/sleep.nix
     ./host/virtualization.nix
   ];
 
   wrappers.pi.enable = true;
 
-  # Ignore failed openldap tests (upstream flaky test)
+  # NOTE: do NOT override openldap here. It sits under easyeffects via
+  # lsp-plugins -> php -> php-ldap, so any overrideAttrs on it changes the
+  # drv hash and forces easyeffects + friends to rebuild from source.
+  # With no overlay, openldap/easyeffects come straight from cache.nixos.org
+  # as binaries (tests only run on source builds, so a flaky upstream test
+  # can't fail a cached download).
   nixpkgs.overlays = [
     (final: prev: {
-      openldap = prev.openldap.overrideAttrs (old: {
-        doCheck = false;
-        doInstallCheck = false;
-      });
       # ponytail: pandas<3.0.0 constraint in sherlock's pyproject.toml; nixpkgs ships pandas 3.0.4
       # remove when sherlock upstream supports pandas 3.x
+      # Leaf-only override (sherlock alone rebuilds, nothing else).
       sherlock = prev.sherlock.overridePythonAttrs (old: {
-        pythonRelaxDeps = [ "pandas" ];
+        pythonRelaxDeps = ["pandas"];
       });
+      grok-bot = final.callPackage ./pkgs/grok-bot.nix {};
+      # Prebuilt upstream nightly AppImage (see pkgs/t3code-nightly.nix).
+      # Replaces nixpkgs stable `t3code`; no source builds involved.
+      t3code-nightly = final.callPackage ./pkgs/t3code-nightly.nix {};
     })
   ];
 
@@ -49,7 +56,11 @@
   nixpkgs.config.allowUnfree = true;
 
   # allow Insecure Packages
-  nixpkgs.config.permittedInsecurePackages = ["electron-36.9.5"];
+  # electron-40: winboat; electron-36: leftover Electron apps still on that pin
+  nixpkgs.config.permittedInsecurePackages = [
+    "electron-36.9.5"
+    "electron-40.10.5"
+  ];
 
   # enable flakes
   nix.settings.experimental-features = ["nix-command" "flakes"];

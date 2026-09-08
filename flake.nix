@@ -114,6 +114,10 @@
     # Own nixpkgs pin + crane/rust-overlay — do not follows nixpkgs or
     # store paths miss https://kopuz.cachix.org prebuilds.
     kopuz.url = "github:temidaradev/kopuz";
+
+    # https://hermes-agent.nousresearch.com/docs/getting-started/nix-setup#quick-start-any-nix-user
+    # Own uv2nix / sealed Python env — do not follows nixpkgs.
+    hermes-agent.url = "github:NousResearch/hermes-agent";
   };
 
   outputs = {

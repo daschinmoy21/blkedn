@@ -1,50 +1,41 @@
-# NVIDIA Laptop Driver Configuration
-# Based on black-don-os nvidia-prime-drivers.nix and nvidia-drivers.nix
+# NVIDIA laptop driver — hybrid mux (BIOS Auto).
+# Intel drives the panel; niri composites on the iGPU.
+# Games / CUDA: prefix with nvidia-offload (from enableOffloadCmd).
+# For dGPU-only BIOS mux: comment out prime, set finegrained = false,
+# and add boot.kernelParams = ["nvidia-drm.fbdev=1"].
 {
   config,
   pkgs,
   lib,
   ...
 }: {
-  # Enable OpenGL
   hardware.graphics = {
     enable = true;
     enable32Bit = true;
   };
 
-  # Load NVIDIA driver for Xorg and Wayland
   services.xserver.videoDrivers = ["nvidia"];
 
   hardware.nvidia = {
-    # Modesetting is required for Wayland
     modesetting.enable = true;
 
-    # Nvidia power management. Experimental, can cause sleep/suspend to fail.
-    powerManagement.enable = false;
+    # Save/restore VRAM across S3. Without this, every resume logs Xid 13
+    # on niri/helium/electron and nvidia-drm atomic modeset fails with -11.
+    # Fine-grained runtime PM needs PRIME + a live iGPU (this mux).
+    powerManagement.enable = true;
+    powerManagement.finegrained = true;
 
-    # Fine-grained power management. Turns off GPU when not in use.
-    # Experimental and only works on modern Nvidia GPUs (Turing or newer).
-    powerManagement.finegrained = false;
-
-    # Use the NVidia open source kernel module (not nouveau).
-    # Support is limited to the Turing and later architectures.
-    # Only available from driver 515.43.04+
+    # Ada (RTX 4050) — open kernel module.
     open = true;
 
-    # Enable the Nvidia settings menu, accessible via `nvidia-settings`.
     nvidiaSettings = true;
-
-    # Use the latest driver version
     package = config.boot.kernelPackages.nvidiaPackages.stable;
 
-    # PRIME configuration for hybrid graphics (Intel + NVIDIA laptop)
     prime = {
       offload = {
         enable = true;
         enableOffloadCmd = true;
       };
-      # Bus IDs - find with: lspci | grep -E "VGA|3D"
-      # Format: "PCI:bus:device:function"
       intelBusId = "PCI:0:2:0";
       nvidiaBusId = "PCI:1:0:0";
     };
