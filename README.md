@@ -10,11 +10,14 @@
 
 Minimal, reinstall-reproducible NixOS flake. Key changes from `main`:
 
-- **Shell**: Noctalia v5 via binary cache (no more DMS)
+- **Shell**: Noctalia v5 (nixpkgs build, so it shares glibc with the GL drivers; no more DMS)
 - **Lock**: qylock (Quickshell `qylock-lock`, same theme as login)
 - **WM**: niri + custom keybinds (Noctalia IPC)
 - **Editor**: nvf (Neovim); duplicate `programs.neovim` disabled
-- **Login**: SDDM + qylock theme (Wayland)
+- **Login**: SDDM + qylock theme (Wayland), GNOME Keyring auto-unlocked via PAM so Electron apps can save sign-ins
+- **AI tooling**: one `llm-agents` flake input (numtide, cached at `cache.numtide.com`) provides claude-code, codex, pi, omp, ccusage, herdr and grok-bot. A second instance that follows our nixpkgs is used only for the Electron apps (claude-desktop, hermes-desktop), because an older glibc cannot load system Mesa (blank window).
+- **Packaged locally** (`pkgs/`, wired as overlays in `configuration.nix`): `t3code-nightly`, `tldraw-offline`, `recordly`, `aula-f75` (AULA F75 keyboard tool; config in `keyboard/`)
+- **Ghostty**: config left unmanaged so Noctalia can write its theme into it
 
 ### Reinstall from scratch
 
@@ -40,7 +43,8 @@ sudo passwd crimxnhaze
 
 **Notes**:
 
-- `host/priv/` is reference-only, not imported. No git-crypt needed.
+- `host/priv/` is reference-only and not imported (the import is commented out in `host/host-configuration.nix`). Its files are git-crypt encrypted in the repo, so ignore them on a fresh clone.
+- Claude Desktop Cowork needs FHS paths (OVMF, virtiofsd) and `vhost_vsock`; these are set up via `systemd.tmpfiles` in `host/programs.nix`.
 - Binary caches are pre-configured (see **Binary caches** below) so rebuilds prefer substitutes over compiling.
 - Lock: run `qylock-lock` or bind it to a key (`Mod+Alt+L`).
 - Walls live on SSD2 (`~/walls` → `SSD2/walls`); not in git.
@@ -50,7 +54,7 @@ sudo passwd crimxnhaze
 ### Structure
 
 ```
-flake.nix          — inputs (noctalia, qylock; no quickshell/DMS)
+flake.nix          — inputs (noctalia, qylock, llm-agents; no quickshell/DMS)
 configuration.nix  — system config, users, hm wiring
 home.nix           — user packages
 host/
@@ -59,7 +63,13 @@ host/
   qylock.nix       — qylock NixOS module (SDDM theme + Quickshell lock)
   services.nix     — network, audio, fonts, portals, hotspot firewall, etc.
   greeter.nix      — SDDM (greetd disabled); theme via qylock
-  nvidia.nix       — NVIDIA PRIME offload
+  virtualization.nix — libvirt, Docker, Podman, IOMMU
+  user-settings.nix  — user, groups, session env
+hw/
+  nvidia.nix       — NVIDIA + Intel PRIME offload
+  sleep.nix        — S3 sleep fixes
+pkgs/              — local packages (t3code-nightly, tldraw-offline, recordly, aula-f75)
+keyboard/          — AULA F75 keyboard config
 rice/
   niri/            — niri keybinds, startup, layout, etc.
   nvf.nix          — Neovim via nvf
@@ -82,16 +92,17 @@ Configured in `host/programs.nix` and mirrored in `flake.nix` `nixConfig` so bot
 | `niri.cachix.org` | niri-flake |
 | `nvf` / `notashelf` | nvf Neovim |
 | `zen-browser.cachix.org` | Zen browser flake |
-| `kevinpita.cachix.org` | herdr |
-| `kopuz.cachix.org` | kopuz (own nixpkgs pin — do not `follows` nixpkgs) |
+| `kevinpita.cachix.org` | herdr (legacy) |
+| `cache.numtide.com` | llm-agents.nix (claude-code, codex, pi, omp, ...) |
+| `codex-desktop-linux.cachix.org` | codex-desktop-linux |
 | `ezkea.cachix.org` | AAGL / game launchers |
 | `nix-community.cachix.org` | community packages / HM-related |
-| `cuda-maintainers.cachix.org` | NVIDIA/CUDA |
+| `cache.nixos-cuda.org` | NVIDIA/CUDA (old `cuda-maintainers.cachix.org` is gone) |
 | `nix-gaming` / `nixpkgs-wayland` | gaming + Wayland |
 | `numtide` / `helix` / `devenv` / `chaotic-nyx` | tooling + large prebuild sets |
 
 Also: `always-allow-substitutes`, higher `max-substitution-jobs` / `http-connections`.  
-**Still builds from source** when a flake has no public cache (e.g. helium, antigravity, codex, qylock, pi-agent) or when you `override` a package (changes the drv hash). Prefer stock nixpkgs attrs when possible.
+**Still builds from source** when a flake has no public cache (e.g. helium, antigravity, qylock) or when you `override` a package (changes the drv hash). Prefer stock nixpkgs attrs when possible.
 
 After editing caches: `nh os switch` (or `sudo nixos-rebuild switch --flake .#nixos`).
 

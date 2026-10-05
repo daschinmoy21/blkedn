@@ -45,23 +45,22 @@ in
     postBuild = ''
       # Upstream's desktop file already uses --no-sandbox (Nix store cannot
       # provide the setuid chrome-sandbox); make it the default for CLI use too.
-      # --password-store=basic is REQUIRED, not optional: the app forces
-      # gnome-libsecret when XDG_CURRENT_DESKTOP is not a known DE (e.g. niri),
-      # but catalogs written by stock setups use Chromium's default basic
-      # backend (fixed key, no keyring entry). Without this flag the nightly
-      # cannot decrypt ~/.t3/userdata/connection-catalog.json and hangs on
-      # "Still connecting ... could not confirm this workspace".
-      # The app respects a user-supplied switch and skips its forcing logic.
       #
-      # One-time cleanup (2026-09-07): the first nightly launch without this
-      # flag overwrote ~/.t3/userdata/connection-catalog.json with a v11
-      # (libsecret) blob whose key was never persisted, so NOTHING could
-      # decrypt it ("Still connecting ... could not confirm this workspace").
-      # Fix was to back it up and delete it; the app recreates a fresh one.
-      # Threads/projects/settings (sqlite + ~/.t3/userdata) were unaffected.
+      # Force gnome-libsecret. Electron does not treat niri as a known DE, so
+      # Chromium otherwise lands on basic_text. T3 then refuses to write
+      # ~/.t3/userdata/connection-catalog.json ("Desktop secure storage is
+      # unavailable in this system context") and Add Environment fails.
+      # Passing this flag also matches T3's own niri/Hyprland heuristic
+      # (pingdotgg/t3code#2916) instead of fighting it.
+      #
+      # Do not use --password-store=basic. A catalog written by one backend
+      # cannot be decrypted by the other. If T3 hangs on "Still connecting
+      # ... could not confirm this workspace", back up and delete
+      # connection-catalog.json; the app recreates it. Threads/projects/
+      # settings (sqlite + ~/.t3/userdata) are unrelated.
       wrapProgram "$out/bin/${pname}" \
         --add-flags "--no-sandbox" \
-        --add-flags "--password-store=basic"
+        --add-flags "--password-store=gnome-libsecret"
 
       # Drop-in for the nixpkgs stable binary name (keybinds/launchers keep working).
       ln -s "$out/bin/${pname}" "$out/bin/t3code-desktop"

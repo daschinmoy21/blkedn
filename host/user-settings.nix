@@ -12,7 +12,7 @@
     # "docker" is needed to talk to the system Docker daemon without sudo.
     # Warning: docker group membership is effectively root-equivalent.
     # "kvm" is required for Docker Sandboxes (sbx) microVMs.
-    extraGroups = ["networkmanager" "wheel" "kvm" "libvirtd" "samba" "vboxusers" "docker"];
+    extraGroups = ["networkmanager" "wheel" "kvm" "libvirtd" "samba" "docker"];
     packages = with pkgs; [
       #  kdePackages.kate #useful to have on hand tbh!
       #  thunderbird
@@ -22,8 +22,8 @@
   environment = {
     variables = {
       SHELL = "fish";
-      EDITOR = "zededitor";
-      VISUAL = "zededitor";
+      EDITOR = "zeditor";
+      VISUAL = "zeditor";
       # DOCKER_HOST left unset → host Docker Engine (unix:///var/run/docker.sock).
       # Podman rootless socket (for tools that need it explicitly):
       #   unix:///run/user/1000/podman/podman.sock

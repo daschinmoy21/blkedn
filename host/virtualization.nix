@@ -55,7 +55,6 @@
     127.0.0.1 kubernetes.docker.internal
   '';
 
-  programs.dconf.enable = true;
   programs.virt-manager.enable = true;
 
   services.spice-vdagentd.enable = true;
@@ -83,10 +82,4 @@
 
   # Kernel params for Intel IOMMU
   boot.kernelParams = ["intel_iommu=on" "iommu=pt"];
-
-  # Enable OpenGL/Graphics for VMs
-  hardware.graphics = {
-    enable = true;
-    enable32Bit = true;
-  };
 }

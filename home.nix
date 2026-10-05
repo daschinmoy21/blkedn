@@ -26,7 +26,7 @@
     inputs.antigravity-nix.packages.${pkgs.stdenv.hostPlatform.system}.google-antigravity-ide
     inputs.antigravity-nix.packages.${pkgs.stdenv.hostPlatform.system}.google-antigravity-cli
 
-    inputs.codex-cli-nix.packages.${pkgs.stdenv.hostPlatform.system}.default
+    inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex
 
     # migrated from nix profile
     fastfetch
@@ -35,15 +35,16 @@
     witr
     ytmdesktop
 
-    # external flake packages
-    inputs.ccusage-nix.packages.${pkgs.stdenv.hostPlatform.system}.default
-    inputs.omp-nix.packages.${pkgs.stdenv.hostPlatform.system}.oh-my-pi
-    inputs.herdr-nix.packages.${pkgs.stdenv.hostPlatform.system}.default
+    # external flake packages (llm-agents → cache.numtide.com)
+    inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.ccusage
+    inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.omp
+    inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.herdr
+    inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.pi
   ];
 
   programs.codexDesktopLinux = {
     enable = true;
-    cliPackage = inputs.codex-cli-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
+    cliPackage = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex;
     remoteControl.enable = true;
   };
 

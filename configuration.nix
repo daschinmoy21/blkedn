@@ -16,8 +16,6 @@
     ./host/virtualization.nix
   ];
 
-  wrappers.pi.enable = true;
-
   # NOTE: do NOT override openldap here. It sits under easyeffects via
   # lsp-plugins -> php -> php-ldap, so any overrideAttrs on it changes the
   # drv hash and forces easyeffects + friends to rebuild from source.
@@ -32,10 +30,13 @@
       sherlock = prev.sherlock.overridePythonAttrs (old: {
         pythonRelaxDeps = ["pandas"];
       });
-      grok-bot = final.callPackage ./pkgs/grok-bot.nix {};
       # Prebuilt upstream nightly AppImage (see pkgs/t3code-nightly.nix).
       # Replaces nixpkgs stable `t3code`; no source builds involved.
       t3code-nightly = final.callPackage ./pkgs/t3code-nightly.nix {};
+      # Prebuilt upstream AppImage (see pkgs/tldraw-offline.nix).
+      tldraw-offline = final.callPackage ./pkgs/tldraw-offline.nix {};
+      recordly = final.callPackage ./pkgs/recordly.nix {};
+      aula-f75 = final.callPackage ./pkgs/aula-f75.nix {};
     })
   ];
 

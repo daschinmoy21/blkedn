@@ -60,14 +60,12 @@ in {
   environment.systemPackages = with pkgs; [
     # system tools
     grok-build
-    grok-bot
-    bluez-headers # bluetooth enabling
+    inputs.llm-agents.packages.${system}.grok-bot
     pulseaudio # provides pactl
     easyeffects # PipeWire audio effects
     alejandra #nix language formatting
     nix-init #tool of building packages
     xarchiver #GTK frontend for 7zip
-    glibc #c language library
     dosfstools #create and check V/FAT file systems
     ntfs3g # NTFS handling
     gnumake # 'make' commands
@@ -75,7 +73,13 @@ in {
     nix-output-monitor
     nvd
     opencode
-    code-cursor-fhs
+    inputs.llm-agents.packages.${system}.claude-code
+    # Electron doesn't recognise niri as a DE, so force gnome-libsecret
+    # (same fix as t3code-nightly) instead of basic_text store.
+    (inputs.llm-agents-desktop.packages.${system}.claude-desktop.override {
+      commandLineArgs = "--password-store=gnome-libsecret";
+    })
+    qemu # Cowork's micro-VM expects qemu-system-x86_64 on PATH
     appimage-run
 
     heliumCdp
@@ -83,7 +87,6 @@ in {
     uv
     virtiofsd
     zed-editor
-    cursor-cli
     feishin
     chromium
 
@@ -114,8 +117,6 @@ in {
 
     # display shenangians
     xdg-utils
-    xdg-desktop-portal-gtk
-    xdg-desktop-portal-xapp
     xwayland-satellite
     cmatrix
 
@@ -165,12 +166,11 @@ in {
     cloudflare-warp
     spotify
     ncspot
-    cacert
 
     networkmanagerapplet
-    power-profiles-daemon
 
     # migrated from nix profile
+    localsend
     blanket
     gnome-disk-utility
     mpv
@@ -178,12 +178,14 @@ in {
     socat
     # nightly AppImage (overlay) — replaces nixpkgs stable `t3code`
     t3code-nightly
-    inputs.kopuz.packages.${system}.default
+    # upstream AppImage (overlay, pkgs/tldraw-offline.nix)
+    tldraw-offline
+    recordly
+    aula-f75
     brave-origin
     winboat
     opencode-desktop
-    # same as: nix profile install github:NousResearch/hermes-agent#desktop
-    inputs.hermes-agent.packages.${system}.desktop
+    inputs.llm-agents-desktop.packages.${system}.hermes-desktop
 
     # manage / query binary caches (`cachix use …` when experimenting)
     cachix
@@ -195,6 +197,16 @@ in {
     "x-scheme-handler/sand" = "grok-bot.desktop";
     "x-scheme-handler/grokbot" = "grok-bot.desktop";
   };
+
+  # Claude Desktop Cowork: the app probes these hard-coded FHS paths at startup
+  # (no env overrides) and ignores its bundled virtiofsd. /dev/kvm access comes
+  # from the kvm group in host/user-settings.nix.
+  systemd.tmpfiles.rules = [
+    "L+ /usr/share/OVMF/OVMF_CODE_4M.fd - - - - ${pkgs.OVMF.firmware}"
+    "L+ /usr/share/OVMF/OVMF_VARS_4M.fd - - - - ${pkgs.OVMF.variables}"
+    "L+ /usr/libexec/virtiofsd - - - - ${pkgs.virtiofsd}/bin/virtiofsd"
+  ];
+  boot.kernelModules = ["vhost_vsock"];
 
   # Enable programs defined by Home Manager modules.
 
@@ -212,8 +224,6 @@ in {
     steam.enable = true;
     steam.gamescopeSession.enable = true;
     gamemode.enable = true;
-
-    virt-manager.enable = true;
 
     dconf.enable = true;
     xfconf.enable = true; #allow Thunar configs
@@ -255,15 +265,16 @@ in {
       "https://notashelf.cachix.org" # related nvf deps
       "https://zen-browser.cachix.org" # zen-browser-flake
       "https://kevinpita.cachix.org" # herdr-nix
-      "https://kopuz.cachix.org" # kopuz (own nixpkgs pin)
       "https://ezkea.cachix.org" # AAGL / game launchers
 
       # Community / heavy rebuilds
       "https://nix-community.cachix.org" # home-manager & community pkgs
-      "https://cuda-maintainers.cachix.org" # NVIDIA/CUDA stack
+      "https://cache.nixos-cuda.org" # NVIDIA/CUDA (replaces cuda-maintainers.cachix.org)
       "https://nix-gaming.cachix.org" # steam/proton adjacent
       "https://nixpkgs-wayland.cachix.org" # wayland packages
       "https://numtide.cachix.org" # numtide tooling
+      "https://cache.numtide.com" # llm-agents.nix
+      "https://codex-desktop-linux.cachix.org" # codex-desktop-linux
       "https://helix.cachix.org" # helix / evil-helix related
       "https://devenv.cachix.org" # devenv
       "https://chaotic-nyx.cachix.org" # large prebuild set
@@ -278,14 +289,15 @@ in {
       "notashelf.cachix.org-1:VTTBFNQWbfyLuRzgm2I7AWSDJdqAa11ytLXHBhrprZk="
       "zen-browser.cachix.org-1:z/QLGrEkiBYF/7zoHX1Hpuv0B26QrmbVBSy9yDD2tSs="
       "kevinpita.cachix.org-1:Cu9UtCDSfDq3/WDnI7N1N/LzAh90SPS+1R+nWao/hz0="
-      "kopuz.cachix.org-1:J2X3AnAYhKTJW5S3aCLoA1ckonQXVNZMQvhZA0YAufw="
       "ezkea.cachix.org-1:ioBmUbJTZIKsHmWWXPe1FSFbeVe+afhfgqgTSNd34eI="
 
       "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-      "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="
+      "cache.nixos-cuda.org:74DUi4Ye579gUqzH4ziL9IyiJBlDpMRn9MBN8oNan9M="
       "nix-gaming.cachix.org-1:nbjlureqMbRAxR1gJ/f3hxemL9svXaZF/Ees8vCUUs4="
       "nixpkgs-wayland.cachix.org-1:3lwxaILxMRkVhehr5StQprHdEo4IrE8sRho9R9HOLYA="
       "numtide.cachix.org-1:2ps1kLBUWjxIneOy1Ik6cQjb41X0iXVXeHigGmycPPE="
+      "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
+      "codex-desktop-linux.cachix.org-1:nX/xy6AdK9hQE24A8ALGjkCKj2ObFmcnemiL5Cid4nk="
       "helix.cachix.org-1:ejp9KQpR1FBI2onstMQ34yogDm4OgU2ru6lIwPvuCVs="
       "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw="
       "chaotic-nyx.cachix.org-1:HfnXSw4pj95iI/n17rIDy40agHj12WfF+Gqk6SonIT8="

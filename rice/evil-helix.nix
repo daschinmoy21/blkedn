@@ -19,7 +19,6 @@ in {
       vscode-extensions.llvm-vs-code-extensions.vscode-clangd
       clang-tools
       docker-compose-language-service
-      docker-compose
       docker-language-server
       typescript-language-server
       rust-analyzer

@@ -12,13 +12,14 @@
       "https://notashelf.cachix.org"
       "https://zen-browser.cachix.org"
       "https://kevinpita.cachix.org"
-      "https://kopuz.cachix.org"
       "https://ezkea.cachix.org"
       "https://nix-community.cachix.org"
-      "https://cuda-maintainers.cachix.org"
+      "https://cache.nixos-cuda.org"
       "https://nix-gaming.cachix.org"
       "https://nixpkgs-wayland.cachix.org"
       "https://numtide.cachix.org"
+      "https://cache.numtide.com"
+      "https://codex-desktop-linux.cachix.org"
       "https://helix.cachix.org"
       "https://devenv.cachix.org"
       "https://chaotic-nyx.cachix.org"
@@ -31,13 +32,14 @@
       "notashelf.cachix.org-1:VTTBFNQWbfyLuRzgm2I7AWSDJdqAa11ytLXHBhrprZk="
       "zen-browser.cachix.org-1:z/QLGrEkiBYF/7zoHX1Hpuv0B26QrmbVBSy9yDD2tSs="
       "kevinpita.cachix.org-1:Cu9UtCDSfDq3/WDnI7N1N/LzAh90SPS+1R+nWao/hz0="
-      "kopuz.cachix.org-1:J2X3AnAYhKTJW5S3aCLoA1ckonQXVNZMQvhZA0YAufw="
       "ezkea.cachix.org-1:ioBmUbJTZIKsHmWWXPe1FSFbeVe+afhfgqgTSNd34eI="
       "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-      "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="
+      "cache.nixos-cuda.org:74DUi4Ye579gUqzH4ziL9IyiJBlDpMRn9MBN8oNan9M="
       "nix-gaming.cachix.org-1:nbjlureqMbRAxR1gJ/f3hxemL9svXaZF/Ees8vCUUs4="
       "nixpkgs-wayland.cachix.org-1:3lwxaILxMRkVhehr5StQprHdEo4IrE8sRho9R9HOLYA="
       "numtide.cachix.org-1:2ps1kLBUWjxIneOy1Ik6cQjb41X0iXVXeHigGmycPPE="
+      "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
+      "codex-desktop-linux.cachix.org-1:nX/xy6AdK9hQE24A8ALGjkCKj2ObFmcnemiL5Cid4nk="
       "helix.cachix.org-1:ejp9KQpR1FBI2onstMQ34yogDm4OgU2ru6lIwPvuCVs="
       "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw="
       "chaotic-nyx.cachix.org-1:HfnXSw4pj95iI/n17rIDy40agHj12WfF+Gqk6SonIT8="
@@ -59,15 +61,9 @@
 
     noctalia.url = "github:noctalia-dev/noctalia/cachix";
 
-    qylock.url = "github:Darkkal44/qylock";
-
-    ccusage-nix = {
-      url = "github:ccusage/ccusage";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    omp-nix = {
-      url = "github:yuxqiu/omp-nix";
+    # No cache of its own, so following nixpkgs costs nothing and shares our Qt.
+    qylock = {
+      url = "github:Darkkal44/qylock";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -91,65 +87,43 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    codex-cli-nix = {
-      url = "github:sadjow/codex-cli-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
+    # Must follow our nixpkgs: Electron dlopens the system Mesa from
+    # /run/opengl-driver, and an older pinned glibc cannot load it
+    # (GLIBC_2.43 not found -> blank window). Costs a local rebuild of the app.
     codex-desktop-linux = {
       url = "github:ilysenko/codex-desktop-linux";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nix-pi-coding-agent = {
-      url = "github:peedrr/nix-pi-coding-agent";
+    # claude-code, claude-desktop, grok-bot, codex, pi, omp, ccusage, herdr,
+    # hermes-desktop. No nixpkgs follow so builds hit cache.numtide.com.
+    llm-agents.url = "github:numtide/llm-agents.nix";
+
+    # Second instance following our nixpkgs, used ONLY for claude-desktop and
+    # hermes-desktop: the
+    # Electron app dlopens system Mesa, and llm-agents' older glibc (2.42) cannot
+    # load it (GLIBC_2.43 not found -> blank window). Everything else stays on
+    # the cached llm-agents above.
+    llm-agents-desktop = {
+      url = "github:numtide/llm-agents.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    herdr-nix = {
-      url = "github:kevinpita/herdr-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    # Own nixpkgs pin + crane/rust-overlay — do not follows nixpkgs or
-    # store paths miss https://kopuz.cachix.org prebuilds.
-    kopuz.url = "github:temidaradev/kopuz";
-
-    # https://hermes-agent.nousresearch.com/docs/getting-started/nix-setup#quick-start-any-nix-user
-    # Own uv2nix / sealed Python env — do not follows nixpkgs.
-    hermes-agent.url = "github:NousResearch/hermes-agent";
   };
 
-  outputs = {
-    self,
-    nixpkgs,
-    home-manager,
-    niri,
-    nvf,
-    zen-browser,
-    antigravity-nix,
-    nix-pi-coding-agent,
-    codex-cli-nix,
-    codex-desktop-linux,
-    ...
-  } @ inputs: let
+  outputs = {nixpkgs, ...} @ inputs: let
     system = "x86_64-linux";
-    specialArgs = {
-      inherit inputs system;
-      zen-browser = zen-browser.packages.${system}.default;
-    };
   in {
     formatter.${system} = nixpkgs.legacyPackages.${system}.alejandra;
 
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
-      inherit system specialArgs;
+      specialArgs = {inherit inputs;};
       modules = [
+        {nixpkgs.hostPlatform = system;}
         ./configuration.nix
         inputs.home-manager.nixosModules.home-manager
         inputs.niri.nixosModules.niri
         inputs.noctalia.nixosModules.default
         inputs.qylock.nixosModules.default
-        nix-pi-coding-agent.nixosModules.pi
       ];
     };
   };

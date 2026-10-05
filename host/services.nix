@@ -143,12 +143,9 @@
     clean.extraArgs = "--keep-since 7d --keep 5";
   };
 
-  programs.nix-ld.enable = true;
-
   # Automatic Nix Store Management - Handling Garbage collection w/ nh's functions above
   nix = {
     optimise.automatic = true;
-    settings.auto-optimise-store = true;
   };
 
   # General services
@@ -156,6 +153,8 @@
   services.udev.extraRules = ''
     SUBSYSTEM=="hidraw", ATTRS{idVendor}=="3554", ATTRS{idProduct}=="f503", MODE="0666"
     SUBSYSTEM=="hidraw", ATTRS{idVendor}=="3554", ATTRS{idProduct}=="fa09", MODE="0666"
+    # AULA F75 keyboard (aula-f75 tool needs hidraw access)
+    SUBSYSTEM=="hidraw", ATTRS{idVendor}=="258a", ATTRS{idProduct}=="010c", MODE="0666"
   '';
 
   services = {
