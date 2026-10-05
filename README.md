@@ -3,15 +3,15 @@
 
   <h1>dotfiles</h1>
 
-  <i>JLC's NixOS Dotfiles — clean-repro branch.</i>
+  <i>JLC's NixOS Dotfiles.</i>
 
   <br><br>
   <img src=".github/assets/screenshot.png" alt="Desktop screenshot: niri + Noctalia + ghostty with fastfetch">
 </div>
 
-### clean-repro
+### Overview
 
-Minimal, reinstall-reproducible NixOS flake. Key changes from `main`:
+Minimal, reinstall-reproducible NixOS flake. `main` and `clean-repro` point at the same commit. Highlights:
 
 - **Shell**: Noctalia v5 (nixpkgs build, so it shares glibc with the GL drivers; no more DMS)
 - **Lock**: qylock (Quickshell `qylock-lock`, same theme as login)
@@ -32,7 +32,7 @@ You only bootstrap the OS + flake; after SSD2 is mounted, tell the agent to rest
 # 1. Clone on fresh NixOS
 git clone https://github.com/blkflth/blkedn ~/blkedn
 cd ~/blkedn
-git checkout clean-repro
+# main is current; clean-repro is kept as an identical alias
 
 # 2. Generate hardware config (overwrite the tracked one)
 nixos-generate-config --show-hardware-config > hardware-configuration.nix
