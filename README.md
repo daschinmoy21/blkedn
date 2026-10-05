@@ -4,6 +4,9 @@
   <h1>dotfiles</h1>
 
   <i>JLC's NixOS Dotfiles — clean-repro branch.</i>
+
+  <br><br>
+  <img src=".github/assets/screenshot.png" alt="Desktop screenshot: niri + Noctalia + ghostty with fastfetch">
 </div>
 
 ### clean-repro
