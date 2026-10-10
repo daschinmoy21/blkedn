@@ -36,6 +36,7 @@
       # Prebuilt upstream AppImage (see pkgs/tldraw-offline.nix).
       tldraw-offline = final.callPackage ./pkgs/tldraw-offline.nix {};
       recordly = final.callPackage ./pkgs/recordly.nix {};
+      tern = final.callPackage ./pkgs/tern.nix {};
       aula-f75 = final.callPackage ./pkgs/aula-f75.nix {};
     })
   ];

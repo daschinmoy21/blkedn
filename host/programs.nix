@@ -181,6 +181,7 @@ in {
     # upstream AppImage (overlay, pkgs/tldraw-offline.nix)
     tldraw-offline
     recordly
+    tern
     aula-f75
     brave-origin
     winboat
