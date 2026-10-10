@@ -48,6 +48,8 @@
   # Use latest kernel.
   boot.kernelPackages = pkgs.linuxPackages;
 
+  boot.kernel.sysctl."net.ipv4.tcp_mtu_probing" = 1;
+
   # kernel modules for system fan control
   boot.kernelModules = ["nct6775"];
 
@@ -91,6 +93,8 @@
   # Enable the OpenSSH daemon (for Hadoop localhost SSH).
   services.openssh = {
     enable = true;
+    # Localhost + tailnet (tailscale0 is trusted) only; not campus LAN
+    openFirewall = false;
     settings = {
       PasswordAuthentication = false;
       PermitRootLogin = "no";

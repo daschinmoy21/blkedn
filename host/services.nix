@@ -24,12 +24,31 @@
   zramSwap.enable = true;
 
   #cloudflare warp
+  # NOTE: don't enable services.resolved. WARP writes 127.0.2.2 straight into
+  # /etc/resolv.conf, but with resolved on, nss-resolve bypasses that file and
+  # WARP hangs at "Connecting" (connectivity-check.warp-svc never resolves).
   services.cloudflare-warp.enable = true;
 
   # Tailscale mesh VPN
   services.tailscale.enable = true;
-  # tailscale0: mesh VPN; wlp0s20f3: Wi‑Fi AP (hotspot CLI, NM shared/NAT)
-  networking.firewall.trustedInterfaces = ["tailscale0" "wlp0s20f3"];
+  # Don't let MagicDNS take over /etc/resolv.conf. With no tailnet global
+  # resolvers it forwards to the "system DNS" it captured, which was WARP's
+  # 127.0.2.2 → no DNS at all whenever WARP was off.
+  # VPS names are pinned in networking.hosts below.
+  services.tailscale.extraSetFlags = ["--accept-dns=false"];
+  networking.firewall.trustedInterfaces = ["tailscale0"];
+  # wlp0s20f3 is also campus Wi-Fi, so don't trust it wholesale. Hotspot
+  # (NM shared mode) only needs dnsmasq's DHCP + DNS; NAT forwarding is
+  # unaffected since the NixOS firewall doesn't filter FORWARD.
+  networking.firewall.interfaces.wlp0s20f3 = {
+    allowedUDPPorts = [53 67];
+    allowedTCPPorts = [53];
+  };
+
+  # Pin tailnet VPS hostnames (works even if MagicDNS is flaky)
+  networking.hosts."100.73.232.54" = [
+    "mumbai-oracle.tail7d48ad.ts.net"
+  ];
 
   # Audio services - Pipewire by default
   services.pulseaudio.enable = false; #this is mutually exclusive w/ pipewire
