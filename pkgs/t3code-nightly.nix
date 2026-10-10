@@ -10,13 +10,10 @@
 #   - Resource-monitor sidecar is included (electron-builder artifact)
 #   - No standalone `t3` server CLI; use `npx t3@latest` for that
 #
-# Bump:
-#   1. Pick the newest prerelease tag at
-#      https://github.com/pingdotgg/t3code/releases (v<ver>-nightly.<date>.<build>)
-#   2. nix store prefetch-file --hash-type sha256 \
-#        "https://github.com/pingdotgg/t3code/releases/download/<tag>/T3-Code-<tag-minus-v>-x86_64.AppImage"
-#      (note: asset name keeps the full nightly version incl. date/build)
-#   3. Update `version` + `hash` below and rebuild.
+# Update version + hash from the config root:
+#   nix run nixpkgs#nix-update -- t3code-nightly --flake \
+#     --version=unstable --version-regex 'v(.*-nightly\..*)' --build
+# Then apply with `nh os switch`.
 {
   lib,
   appimageTools,
@@ -26,11 +23,11 @@
 }: let
   pname = "t3code-nightly";
   # Full nightly version (date + build suffix); asset names use it verbatim.
-  version = "0.0.39-nightly.20260906.1316";
+  version = "0.0.46-nightly.20261006.2735";
 
   src = fetchurl {
     url = "https://github.com/pingdotgg/t3code/releases/download/v${version}/T3-Code-${version}-x86_64.AppImage";
-    hash = "sha256-bja7Nh2gRVUFkKKSEGOEroS39H/+2ySr2e9Buasv4W4=";
+    hash = "sha256-ocMS9u3tHYOEsgRDbsLNbNQra/L7N0mlKViXF6Yoglc=";
   };
 
   contents = appimageTools.extract {inherit pname version src;};
@@ -41,6 +38,9 @@ in
     name = "${pname}-${version}";
     paths = [fhs];
     nativeBuildInputs = [makeWrapper];
+
+    # Let nix-update discover the upstream release and source hash.
+    passthru = {inherit pname version src;};
 
     postBuild = ''
       # Upstream's desktop file already uses --no-sandbox (Nix store cannot

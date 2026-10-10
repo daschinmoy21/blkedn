@@ -123,6 +123,10 @@
   in {
     formatter.${system} = nixpkgs.legacyPackages.${system}.alejandra;
 
+    # Expose the local package for `nix build` and `nix-update --flake`.
+    packages.${system}.t3code-nightly =
+      nixpkgs.legacyPackages.${system}.callPackage ./pkgs/t3code-nightly.nix {};
+
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       specialArgs = {inherit inputs;};
       modules = [
