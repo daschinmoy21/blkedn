@@ -7,6 +7,7 @@
     ./tui.nix
     ./virt.nix
     ./hotspot.nix
+    ./bitchord.nix
   ];
 
   programs = {

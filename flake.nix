@@ -95,6 +95,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # BitChord: the AppImage the fork's GitHub Actions publishes as a rolling prerelease on every
+    # push to main. Fetched during the rebuild; `nh os switch -U bitchord-appimage` (the `build`
+    # alias) or `-u` (the `update` alias) pull a newer one. See apps/bitchord.nix.
+    bitchord-appimage = {
+      url = "file+https://github.com/daschinmoy21/BitChord/releases/download/build-main/BitChord-linux-x86_64.AppImage";
+      flake = false;
+    };
+
     # claude-code, claude-desktop, grok-bot, codex, pi, omp, ccusage, herdr,
     # hermes-desktop. No nixpkgs follow so builds hit cache.numtide.com.
     llm-agents.url = "github:numtide/llm-agents.nix";

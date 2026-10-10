@@ -7,7 +7,8 @@
     '';
 
     shellAliases = {
-      build = "nh os switch /home/crimxnhaze/blkedn";
+      # Also takes the newest BitChord CI build (the bitchord-appimage input), see apps/bitchord.nix.
+      build = "nh os switch -U bitchord-appimage /home/crimxnhaze/blkedn";
       update = "nh os switch -u -a /home/crimxnhaze/blkedn";
       preview = "nh os test -n /home/crimxnhaze/blkedn";
       scrub = "nh clean all --keep-since 7d --keep 5";
