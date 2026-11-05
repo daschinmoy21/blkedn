@@ -13,6 +13,7 @@
     ./host/host-configuration.nix
     ./hw/nvidia.nix
     ./hw/sleep.nix
+    ./hw/laptop-keyboard.nix
     ./host/virtualization.nix
   ];
 
@@ -38,6 +39,7 @@
       recordly = final.callPackage ./pkgs/recordly.nix {};
       tern = final.callPackage ./pkgs/tern.nix {};
       aula-f75 = final.callPackage ./pkgs/aula-f75.nix {};
+      laptop-kbd = final.callPackage ./pkgs/laptop-kbd.nix {};
     })
   ];
 
