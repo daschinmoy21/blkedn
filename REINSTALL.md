@@ -135,6 +135,7 @@ test -f ~/walls/katana.png && echo walls ok
 - User password / any secrets not on SSD2  
 - Cloudflare WARP login, browser account sessions if profile restore is incomplete  
 - **keelcode** — not packaged yet (README TODO)  
+- Laptop keyboard bar button: after the first rebuild and a Noctalia login, run `nix run github:daschinmoy21/noctalia-laptop-keyboard`. It enables the plugin and adds the button to the bar. The command and permission it needs come from `hw/laptop-keyboard.nix`.  
 - `host/priv/` — reference only, not imported  
 
 ---
