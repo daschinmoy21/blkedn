@@ -35,6 +35,7 @@ in {
     # === Security ===
     "Mod+Shift+Q".action = quit;
     "Mod+Alt+L".action.spawn = spawn "qylock-lock";
+    "Mod+Alt+K".action.spawn = spawn ["laptop-kbd" "toggle"];
     
     # === Keyboard Brightness ===
     "XF86KbdBrightnessUp".action.spawn = spawn ["kbdbrite.sh" "up"];
