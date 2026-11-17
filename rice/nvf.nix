@@ -188,6 +188,18 @@
           action = ":bnext<CR>";
           desc = "Next buffer";
         }
+        {
+          key = "<leader>gd";
+          mode = ["n"];
+          action = "<cmd>Differ<cr>";
+          desc = "Differ: changes";
+        }
+        {
+          key = "<leader>gh";
+          mode = ["n"];
+          action = "<cmd>Differ history %<cr>";
+          desc = "Differ: file history";
+        }
       ];
 
       telescope = {
@@ -293,6 +305,13 @@
           enable = true;
           lsp.enable = true;
         };
+      };
+
+      # Avante: AI chat/edit in Neovim. Provider "claude" reads ANTHROPIC_API_KEY from the env
+      # (never commit a key). Default maps live under <leader>a (e.g. <leader>aa to ask).
+      assistant.avante-nvim = {
+        enable = true;
+        setupOpts.provider = "claude";
       };
 
       visuals = {
@@ -519,6 +538,14 @@
         };
         nui = {
           package = nui-nvim;
+        };
+        differ = {
+          package = pkgs.vimUtils.buildVimPlugin {
+            pname = "differ";
+            version = "0.1.0";
+            src = inputs.differ;
+          };
+          setup = "require('differ').setup({})";
         };
       };
     };

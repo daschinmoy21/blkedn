@@ -122,6 +122,22 @@
         "type": "github"
       }
     },
+    "differ": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1793904941,
+        "narHash": "sha256-fI4CIMNihzRUGl/5udBNMYI9MdOyylX7z0iy1R5Z58w=",
+        "owner": "daschinmoy21",
+        "repo": "differ",
+        "rev": "be9d7430cc356150ceefad11432039cf88bf2342",
+        "type": "github"
+      },
+      "original": {
+        "owner": "daschinmoy21",
+        "repo": "differ",
+        "type": "github"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -577,6 +593,7 @@
         "antigravity-nix": "antigravity-nix",
         "bitchord-appimage": "bitchord-appimage",
         "codex-desktop-linux": "codex-desktop-linux",
+        "differ": "differ",
         "helium": "helium",
         "home-manager": "home-manager",
         "llm-agents": "llm-agents",

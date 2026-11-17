@@ -72,6 +72,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Differ: git review view for Neovim (own plugin, no flake). Built in rice/nvf.nix.
+    # `nix flake update differ` picks up new commits.
+    differ = {
+      url = "github:daschinmoy21/differ";
+      flake = false;
+    };
+
     helium = {
       url = "github:schembriaiden/helium-browser-nix-flake";
       inputs.nixpkgs.follows = "nixpkgs";
